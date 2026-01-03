@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1767038780012,
+      "tag": "0000_rare_tana_nile",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1767410922340,
+      "tag": "0001_add-analysis-conversations",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767472023798,
+      "tag": "0002_powerful_fallen_one",
+      "breakpoints": true
+    }
+  ]
+}

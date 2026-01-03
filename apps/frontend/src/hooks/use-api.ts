@@ -1,0 +1,476 @@
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { api, CreateServerDto, UpdateServerDto, LogSearchParams, IssueSearchParams, UpdateIssueDto, CreateAiProviderDto, UpdateAiProviderDto, AiProviderType } from '@/lib/api';
+
+// Query Keys
+export const queryKeys = {
+  health: ['health'] as const,
+  dashboard: ['dashboard'] as const,
+  servers: ['servers'] as const,
+  server: (id: string) => ['servers', id] as const,
+  providers: ['providers'] as const,
+  logs: (params?: LogSearchParams) => ['logs', params] as const,
+  log: (id: string) => ['logs', 'detail', id] as const,
+  logDetails: (id: string) => ['logs', 'details', id] as const,
+  logStats: (serverId?: string) => ['logs', 'stats', serverId] as const,
+  logSources: (serverId?: string) => ['logs', 'sources', serverId] as const,
+  sessions: ['sessions'] as const,
+  activeSessions: ['sessions', 'active'] as const,
+  session: (id: string) => ['sessions', id] as const,
+  sessionTimeline: (id: string) => ['sessions', id, 'timeline'] as const,
+  sessionLogs: (id: string) => ['sessions', id, 'logs'] as const,
+  issues: (params?: IssueSearchParams) => ['issues', params] as const,
+  issue: (id: string) => ['issues', 'detail', id] as const,
+  issueStats: (serverId?: string) => ['issues', 'stats', serverId] as const,
+  issueCategories: ['issues', 'categories'] as const,
+  // Settings
+  aiProviders: ['settings', 'ai', 'providers'] as const,
+  aiProviderSettings: ['settings', 'ai'] as const,
+  aiProviderSetting: (id: string) => ['settings', 'ai', id] as const,
+  defaultAiProvider: ['settings', 'ai', 'default'] as const,
+};
+
+// Health
+export function useHealth() {
+  return useQuery({
+    queryKey: queryKeys.health,
+    queryFn: () => api.getHealth(),
+    refetchInterval: 30000,
+  });
+}
+
+// Dashboard - aggregated data for command center
+export function useDashboardStats() {
+  return useQuery({
+    queryKey: queryKeys.dashboard,
+    queryFn: () => api.getDashboard(),
+    refetchInterval: 30000, // Refresh every 30 seconds
+    placeholderData: keepPreviousData,
+    staleTime: 10000, // Consider data fresh for 10 seconds
+  });
+}
+
+// Servers
+export function useServers() {
+  return useQuery({
+    queryKey: queryKeys.servers,
+    queryFn: () => api.getServers(),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useServer(id: string) {
+  return useQuery({
+    queryKey: queryKeys.server(id),
+    queryFn: () => api.getServer(id),
+    enabled: !!id,
+  });
+}
+
+export function useProviders() {
+  return useQuery({
+    queryKey: queryKeys.providers,
+    queryFn: () => api.getProviders(),
+  });
+}
+
+export function useCreateServer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateServerDto) => api.createServer(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.servers });
+    },
+  });
+}
+
+export function useUpdateServer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateServerDto }) =>
+      api.updateServer(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.servers });
+      queryClient.invalidateQueries({ queryKey: queryKeys.server(id) });
+    },
+  });
+}
+
+export function useDeleteServer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => api.deleteServer(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.servers });
+    },
+  });
+}
+
+export function useTestConnection() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => api.testServerConnection(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.servers });
+      queryClient.invalidateQueries({ queryKey: queryKeys.server(id) });
+    },
+  });
+}
+
+// Logs
+export function useLogs(params?: LogSearchParams) {
+  return useQuery({
+    queryKey: queryKeys.logs(params),
+    queryFn: () => api.getLogs(params),
+    refetchInterval: 5000,
+  });
+}
+
+export function useLog(id: string) {
+  return useQuery({
+    queryKey: queryKeys.log(id),
+    queryFn: () => api.getLog(id),
+    enabled: !!id,
+  });
+}
+
+export function useLogDetails(id: string) {
+  return useQuery({
+    queryKey: queryKeys.logDetails(id),
+    queryFn: () => api.getLogDetails(id),
+    enabled: !!id,
+  });
+}
+
+export function useLogStats(serverId?: string) {
+  return useQuery({
+    queryKey: queryKeys.logStats(serverId),
+    queryFn: () => api.getLogStats(serverId),
+    refetchInterval: 10000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useLogSources(serverId?: string) {
+  return useQuery({
+    queryKey: queryKeys.logSources(serverId),
+    queryFn: () => api.getLogSources(serverId),
+  });
+}
+
+// Sessions - 100% real-time via WebSocket, no polling
+export function useSessions() {
+  return useQuery({
+    queryKey: queryKeys.sessions,
+    queryFn: () => api.getSessions(),
+  });
+}
+
+export function useActiveSessions() {
+  return useQuery({
+    queryKey: queryKeys.activeSessions,
+    queryFn: () => api.getActiveSessions(),
+    placeholderData: keepPreviousData,
+    refetchInterval: 5000, // Refetch every 5 seconds as backup to WebSocket
+  });
+}
+
+export function useSession(id: string) {
+  return useQuery({
+    queryKey: queryKeys.session(id),
+    queryFn: () => api.getSession(id),
+    enabled: !!id,
+  });
+}
+
+export function useSessionTimeline(id: string) {
+  return useQuery({
+    queryKey: queryKeys.sessionTimeline(id),
+    queryFn: () => api.getSessionTimeline(id),
+    enabled: !!id,
+  });
+}
+
+export function useSessionLogs(id: string) {
+  return useQuery({
+    queryKey: queryKeys.sessionLogs(id),
+    queryFn: () => api.getSessionLogs(id),
+    enabled: !!id,
+  });
+}
+
+// Issues
+export function useIssues(params?: IssueSearchParams) {
+  return useQuery({
+    queryKey: queryKeys.issues(params),
+    queryFn: () => api.getIssues(params),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useIssue(id: string) {
+  return useQuery({
+    queryKey: queryKeys.issue(id),
+    queryFn: () => api.getIssue(id),
+    enabled: !!id,
+  });
+}
+
+export function useIssueStats(serverId?: string) {
+  return useQuery({
+    queryKey: queryKeys.issueStats(serverId),
+    queryFn: () => api.getIssueStats(serverId),
+    refetchInterval: 30000,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useIssueCategories() {
+  return useQuery({
+    queryKey: queryKeys.issueCategories,
+    queryFn: () => api.getIssueCategories(),
+  });
+}
+
+export function useUpdateIssue() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateIssueDto }) =>
+      api.updateIssue(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issue(id) });
+    },
+  });
+}
+
+export function useAcknowledgeIssue() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => api.acknowledgeIssue(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issue(id) });
+    },
+  });
+}
+
+export function useResolveIssue() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, resolvedBy }: { id: string; resolvedBy?: string }) =>
+      api.resolveIssue(id, resolvedBy),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issue(id) });
+    },
+  });
+}
+
+export function useIgnoreIssue() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => api.ignoreIssue(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issue(id) });
+    },
+  });
+}
+
+export function useReopenIssue() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => api.reopenIssue(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issue(id) });
+    },
+  });
+}
+
+export function useMergeIssues() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ issueIds, newTitle }: { issueIds: string[]; newTitle?: string }) =>
+      api.mergeIssues(issueIds, newTitle),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] });
+    },
+  });
+}
+
+export function useBackfillIssues() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (serverId?: string) => api.backfillIssues(serverId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] });
+    },
+  });
+}
+
+export function useIssueOccurrences(id: string, limit?: number, offset?: number) {
+  return useQuery({
+    queryKey: ['issues', 'occurrences', id, limit, offset] as const,
+    queryFn: () => api.getIssueOccurrences(id, limit, offset),
+    enabled: !!id,
+  });
+}
+
+export function useIssueTimeline(id: string) {
+  return useQuery({
+    queryKey: ['issues', 'timeline', id] as const,
+    queryFn: () => api.getIssueTimeline(id),
+    enabled: !!id,
+  });
+}
+
+export function useAnalyzeIssue() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, providerId }: { id: string; providerId?: string }) =>
+      api.analyzeIssue(id, providerId),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['issues'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issue(id) });
+    },
+  });
+}
+
+// Settings - AI Providers
+export function useAvailableAiProviders() {
+  return useQuery({
+    queryKey: queryKeys.aiProviders,
+    queryFn: () => api.getAvailableAiProviders(),
+  });
+}
+
+export function useAiProviderSettings() {
+  return useQuery({
+    queryKey: queryKeys.aiProviderSettings,
+    queryFn: () => api.getAiProviderSettings(),
+  });
+}
+
+export function useAiProviderSetting(id: string) {
+  return useQuery({
+    queryKey: queryKeys.aiProviderSetting(id),
+    queryFn: () => api.getAiProviderSetting(id),
+    enabled: !!id,
+  });
+}
+
+export function useDefaultAiProvider() {
+  return useQuery({
+    queryKey: queryKeys.defaultAiProvider,
+    queryFn: () => api.getDefaultAiProvider(),
+  });
+}
+
+export function useCreateAiProviderSetting() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateAiProviderDto) => api.createAiProviderSetting(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.aiProviderSettings });
+      queryClient.invalidateQueries({ queryKey: queryKeys.defaultAiProvider });
+    },
+  });
+}
+
+export function useUpdateAiProviderSetting() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateAiProviderDto }) =>
+      api.updateAiProviderSetting(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.aiProviderSettings });
+      queryClient.invalidateQueries({ queryKey: queryKeys.aiProviderSetting(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.defaultAiProvider });
+    },
+  });
+}
+
+export function useDeleteAiProviderSetting() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => api.deleteAiProviderSetting(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.aiProviderSettings });
+      queryClient.invalidateQueries({ queryKey: queryKeys.defaultAiProvider });
+    },
+  });
+}
+
+export function useTestAiProvider() {
+  return useMutation({
+    mutationFn: ({ provider, apiKey, model, baseUrl }: { provider: AiProviderType; apiKey: string; model: string; baseUrl?: string }) =>
+      api.testAiProvider(provider, apiKey, model, baseUrl),
+  });
+}
+
+export function useTestAiProviderSetting() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => api.testAiProviderSetting(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.aiProviderSettings });
+      queryClient.invalidateQueries({ queryKey: queryKeys.aiProviderSetting(id) });
+    },
+  });
+}
+
+export function useFetchAiProviderModels() {
+  return useMutation({
+    mutationFn: ({ provider, apiKey, baseUrl }: { provider: AiProviderType; apiKey: string; baseUrl?: string }) =>
+      api.fetchAiProviderModels(provider, apiKey, baseUrl),
+  });
+}
+
+export function useGenerateAiAnalysis() {
+  return useMutation({
+    mutationFn: ({ prompt, providerId }: { prompt: string; providerId?: string }) =>
+      api.generateAiAnalysis(prompt, providerId),
+  });
+}
+
+// AI Usage Stats
+export function useAiUsageStats(params?: {
+  startDate?: string;
+  endDate?: string;
+  provider?: string;
+}) {
+  return useQuery({
+    queryKey: ['settings', 'ai', 'stats', params] as const,
+    queryFn: () => api.getAiUsageStats(params),
+    staleTime: 60000, // Stats can be cached for a minute
+  });
+}
+
+export function useAiAnalysisHistory(params?: {
+  limit?: number;
+  offset?: number;
+  provider?: string;
+}) {
+  return useQuery({
+    queryKey: ['settings', 'ai', 'history', params] as const,
+    queryFn: () => api.getAiAnalysisHistory(params),
+    placeholderData: keepPreviousData,
+  });
+}
