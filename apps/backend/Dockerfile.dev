@@ -1,0 +1,18 @@
+FROM node:22-alpine
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Copy ALL workspace files
+COPY . .
+
+# Install dependencies
+RUN pnpm install
+
+# Build packages first (core -> provider-arr -> provider-jellyfin, provider-sonarr, provider-radarr, provider-prowlarr)
+RUN pnpm build --filter @logarr/core --filter @logarr/provider-arr --filter @logarr/provider-jellyfin --filter @logarr/provider-sonarr --filter @logarr/provider-radarr --filter @logarr/provider-prowlarr
+
+EXPOSE 4002
+
+CMD ["pnpm", "dev", "--filter", "@logarr/backend"]

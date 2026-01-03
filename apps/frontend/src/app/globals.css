@@ -1,0 +1,319 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: Lato, sans-serif;
+  --font-mono: Roboto Mono, Geist Mono, Geist Mono Fallback, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --font-serif: Merriweather, Geist, Geist Fallback, ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --radius: 0.25rem;
+  --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
+  --tracking-tight: calc(var(--tracking-normal) - 0.025em);
+  --tracking-wide: calc(var(--tracking-normal) + 0.025em);
+  --tracking-wider: calc(var(--tracking-normal) + 0.05em);
+  --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+  --letter-spacing: var(--letter-spacing);
+  --tracking-normal: var(--tracking-normal);
+  --shadow-2xl: var(--shadow-2xl);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-md: var(--shadow-md);
+  --shadow: var(--shadow);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-2xs: var(--shadow-2xs);
+  --spacing: var(--spacing);
+  --shadow-offset-y: var(--shadow-offset-y);
+  --shadow-offset-x: var(--shadow-offset-x);
+  --shadow-spread: var(--shadow-spread);
+  --shadow-blur: var(--shadow-blur);
+  --shadow-opacity: var(--shadow-opacity);
+  --color-shadow-color: var(--shadow-color);
+}
+
+:root {
+  --radius: 0.25rem;
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.35 0.02 165.48);
+  --card: oklch(1.00 0 0);
+  --card-foreground: oklch(0.35 0.02 165.48);
+  --popover: oklch(1.00 0 0);
+  --popover-foreground: oklch(0.35 0.02 165.48);
+  --primary: oklch(0.67 0.17 153.85);
+  --primary-foreground: oklch(0.99 0.02 175.22);
+  --secondary: oklch(0.90 0.02 238.66);
+  --secondary-foreground: oklch(0.20 0.02 266.02);
+  --muted: oklch(0.90 0.02 240.73);
+  --muted-foreground: oklch(0.50 0.03 268.53);
+  --accent: oklch(0.90 0.02 240.73);
+  --accent-foreground: oklch(0.35 0.02 165.48);
+  --destructive: oklch(0.61 0.24 20.96);
+  --border: oklch(0.94 0.01 238.46);
+  --input: oklch(0.85 0.02 240.75);
+  --ring: oklch(0.67 0.17 153.85);
+  --chart-1: oklch(0.67 0.17 153.85);
+  --chart-2: oklch(0.50 0.10 270.06);
+  --chart-3: oklch(0.72 0.12 201.79);
+  --chart-4: oklch(0.80 0.10 100.65);
+  --chart-5: oklch(0.60 0.15 300.14);
+  --sidebar: oklch(0.98 0.01 238.45);
+  --sidebar-foreground: oklch(0.35 0.02 165.48);
+  --sidebar-primary: oklch(0.67 0.17 153.85);
+  --sidebar-primary-foreground: oklch(0.98 0.01 238.45);
+  --sidebar-accent: oklch(0.90 0.02 240.73);
+  --sidebar-accent-foreground: oklch(0.35 0.02 165.48);
+  --sidebar-border: oklch(0.85 0.02 240.75);
+  --sidebar-ring: oklch(0.67 0.17 153.85);
+  --font-sans: Lato, sans-serif;
+  --font-serif: Merriweather, Geist, Geist Fallback, ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: Roboto Mono, Geist Mono, Geist Mono Fallback, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --shadow-color: oklch(0.35 0.05 163.50);
+  --shadow-opacity: 0.04;
+  --shadow-blur: 3px;
+  --shadow-spread: 0px;
+  --shadow-offset-x: 0px;
+  --shadow-offset-y: 1px;
+  --spacing: 0.25rem;
+  --shadow-2xs: 0px 1px 3px 0px oklch(0.35 0.05 163.02 / 0.02);
+  --shadow-xs: 0px 1px 3px 0px oklch(0.35 0.05 163.02 / 0.02);
+  --shadow-sm: 0px 1px 3px 0px oklch(0.35 0.05 163.02 / 0.04), 0px 1px 2px -1px oklch(0.35 0.05 163.02 / 0.04);
+  --shadow: 0px 1px 3px 0px oklch(0.35 0.05 163.02 / 0.04), 0px 1px 2px -1px oklch(0.35 0.05 163.02 / 0.04);
+  --shadow-md: 0px 1px 3px 0px oklch(0.35 0.05 163.02 / 0.04), 0px 2px 4px -1px oklch(0.35 0.05 163.02 / 0.04);
+  --shadow-lg: 0px 1px 3px 0px oklch(0.35 0.05 163.02 / 0.04), 0px 4px 6px -1px oklch(0.35 0.05 163.02 / 0.04);
+  --shadow-xl: 0px 1px 3px 0px oklch(0.35 0.05 163.02 / 0.04), 0px 8px 10px -1px oklch(0.35 0.05 163.02 / 0.04);
+  --shadow-2xl: 0px 1px 3px 0px oklch(0.35 0.05 163.02 / 0.10);
+  --tracking-normal: 0em;
+}
+
+.dark {
+  --background: oklch(0.15 0.02 269.18);
+  --foreground: oklch(0.95 0.01 238.46);
+  --card: oklch(0.20 0.02 266.02);
+  --card-foreground: oklch(0.95 0.01 238.46);
+  --popover: oklch(0.20 0.02 266.02);
+  --popover-foreground: oklch(0.95 0.01 238.46);
+  --primary: oklch(0.67 0.17 153.85);
+  --primary-foreground: oklch(0.15 0.02 269.18);
+  --secondary: oklch(0.30 0.03 271.05);
+  --secondary-foreground: oklch(0.95 0.01 238.46);
+  --muted: oklch(0.30 0.03 271.05);
+  --muted-foreground: oklch(0.60 0.03 269.46);
+  --accent: oklch(0.30 0.03 271.05);
+  --accent-foreground: oklch(0.95 0.01 238.46);
+  --destructive: oklch(0.64 0.25 19.69);
+  --border: oklch(0.95 0.01 238.46 / 15%);
+  --input: oklch(0.95 0.01 238.46 / 20%);
+  --ring: oklch(0.67 0.17 153.85);
+  --chart-1: oklch(0.67 0.17 153.85);
+  --chart-2: oklch(0.60 0.10 269.83);
+  --chart-3: oklch(0.72 0.12 201.79);
+  --chart-4: oklch(0.80 0.10 100.65);
+  --chart-5: oklch(0.60 0.15 300.14);
+  --sidebar: oklch(0.20 0.02 266.02);
+  --sidebar-foreground: oklch(0.95 0.01 238.46);
+  --sidebar-primary: oklch(0.67 0.17 153.85);
+  --sidebar-primary-foreground: oklch(0.15 0.02 269.18);
+  --sidebar-accent: oklch(0.30 0.03 271.05);
+  --sidebar-accent-foreground: oklch(0.95 0.01 238.46);
+  --sidebar-border: oklch(0.95 0.01 238.46 / 15%);
+  --sidebar-ring: oklch(0.67 0.17 153.85);
+  --radius: 0.625rem;
+  --shadow-color: oklch(0 0 0);
+  --shadow-opacity: 0.01;
+  --shadow-blur: 2px;
+  --shadow-spread: 0px;
+  --shadow-offset-x: 0px;
+  --shadow-offset-y: 1px;
+  --letter-spacing: 0em;
+  --spacing: 0.25rem;
+  --font-sans: 'Geist', 'Geist Fallback', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-serif: "Geist", "Geist Fallback", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --shadow-2xs: 0px 1px 2px 0px oklch(0 0 0 / 0.01);
+  --shadow-xs: 0px 1px 2px 0px oklch(0 0 0 / 0.01);
+  --shadow-sm: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+  --shadow: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 1px 2px -1px oklch(0 0 0 / 0.01);
+  --shadow-md: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 2px 4px -1px oklch(0 0 0 / 0.01);
+  --shadow-lg: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 4px 6px -1px oklch(0 0 0 / 0.01);
+  --shadow-xl: 0px 1px 2px 0px oklch(0 0 0 / 0.01), 0px 8px 10px -1px oklch(0 0 0 / 0.01);
+  --shadow-2xl: 0px 1px 2px 0px oklch(0 0 0 / 0.03);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    letter-spacing: var(--tracking-normal);
+  }
+}
+
+/* Streaming animation for live/unknown duration playback */
+@keyframes streamFlow {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+/* Integration picker animations */
+@keyframes slideInFromRight {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Integration card stagger animation */
+.integration-card-enter {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+
+/* Step transition animations */
+.step-slide-in-right {
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.step-slide-in-left {
+  animation: slideInFromLeft 0.3s ease-out;
+}
+
+.step-scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* Success animation */
+@keyframes successBounce {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.success-icon-enter {
+  animation: successBounce 0.5s ease-out;
+}
+
+/* Smooth hover effect for integration cards */
+.integration-card-hover {
+  transition: all 0.2s ease-out;
+}
+
+.integration-card-hover:hover {
+  transform: translateY(-2px);
+}
+
+/* Category filter pill animation */
+@keyframes pillSelect {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.category-pill-active {
+  animation: pillSelect 0.15s ease-out;
+}
