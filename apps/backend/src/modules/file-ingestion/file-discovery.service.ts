@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { existsSync, readdirSync, statSync, readFileSync } from 'fs';
-import { join, resolve } from 'path';
+import { existsSync, readdirSync, statSync } from 'fs';
 import { platform, homedir } from 'os';
+import { join, resolve } from 'path';
+
+import { Injectable, Logger } from '@nestjs/common';
 
 // Local interface until core package is rebuilt
 interface LogFileConfig {

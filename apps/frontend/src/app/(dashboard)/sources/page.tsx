@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { formatDistanceToNow } from "date-fns";
 import {
   MoreHorizontal,
   Pencil,
@@ -12,9 +11,33 @@ import {
   Server,
   Plus,
 } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
 import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
 
+import type { Server as ServerType } from "@/lib/api";
+
+import { AddSourceModal } from "@/components/add-source-modal";
+import { ConnectionStatus } from "@/components/connection-status";
+import {
+  ConnectionTestToastContent,
+  getToastType,
+  getToastTitle,
+} from "@/components/connection-test-toast";
+import { EditServerDialog } from "@/components/edit-server-dialog";
+import { IntegrationIcon } from "@/components/integration-icon";
+import { TablePagination } from "@/components/table-pagination";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,16 +53,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -48,25 +62,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AddSourceModal } from "@/components/add-source-modal";
-import { EditServerDialog } from "@/components/edit-server-dialog";
-import { IntegrationIcon } from "@/components/integration-icon";
-import { TablePagination } from "@/components/table-pagination";
-import { ConnectionStatus } from "@/components/connection-status";
-import {
-  ConnectionTestToastContent,
-  getToastType,
-  getToastTitle,
-} from "@/components/connection-test-toast";
 import { useServers, useDeleteServer, useTestConnection } from "@/hooks/use-api";
 import {
   useFitToViewport,
   useFitToViewportPagination,
 } from "@/hooks/use-fit-to-viewport";
 import { getIntegrationById, integrationCategories } from "@/lib/integrations";
-import type { Server as ServerType } from "@/lib/api";
+
 
 // Fixed heights for layout calculations
 const ROW_HEIGHT = 64; // Height of each table row

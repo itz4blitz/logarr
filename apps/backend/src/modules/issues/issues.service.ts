@@ -1,15 +1,19 @@
+import * as crypto from 'crypto';
+
 import { Injectable, Inject, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { and, eq, gte, inArray, sql, desc, asc, count, avg } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as crypto from 'crypto';
+
 import { DATABASE_CONNECTION } from '../../database';
 import * as schema from '../../database/schema';
-import type { IssueSearchDto, UpdateIssueDto, IssueStatsDto, MergeIssuesDto, IssueSeverity } from './issues.dto';
 import { AiProviderService } from '../settings/ai-provider.service';
-import { IssueContextService, type IssueAnalysisContext } from './issue-context.service';
+
 import { AnalysisPromptBuilder } from './analysis-prompt-builder';
 import { parseAnalysisResponse } from './analysis-response-parser';
-import type { StructuredAnalysis, AnalysisResult, FollowUpResult, ConversationMessage } from './analysis-response.types';
+import { IssueContextService, type IssueAnalysisContext } from './issue-context.service';
+
+import type { AnalysisResult, FollowUpResult, ConversationMessage } from './analysis-response.types';
+import type { IssueSearchDto, UpdateIssueDto, IssueStatsDto, MergeIssuesDto, IssueSeverity } from './issues.dto';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 /**
  * Normalize a query parameter that should be an array.
@@ -38,7 +42,7 @@ export class IssuesService {
    */
   generateFingerprint(message: string, source: string, exceptionType?: string): string {
     // Normalize the message by removing variable parts
-    let normalized = message
+    const normalized = message
       // Remove UUIDs
       .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '<UUID>')
       // Remove numeric IDs
@@ -220,13 +224,12 @@ export class IssuesService {
       if (logEntry.userId) affectedUsers.add(logEntry.userId);
       if (logEntry.sessionId) affectedSessions.add(logEntry.sessionId);
 
-      const hoursSinceLastSeen = (Date.now() - new Date(issue.lastSeen).getTime()) / (1000 * 60 * 60);
       const newImpactScore = this.calculateImpactScore(
         issue.severity,
         issue.occurrenceCount + 1,
         affectedUsers.size,
         affectedSessions.size,
-        0 // Just happened
+        0 // Just happened - recency is 0 hours
       );
 
       // Update issue

@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
+
+import { AiProviderService } from './ai-provider.service';
 import { SettingsController } from './settings.controller';
 import { SettingsService } from './settings.service';
-import { AiProviderService } from './ai-provider.service';
 
 @Module({
   controllers: [SettingsController],

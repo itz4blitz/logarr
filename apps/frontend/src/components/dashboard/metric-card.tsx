@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 

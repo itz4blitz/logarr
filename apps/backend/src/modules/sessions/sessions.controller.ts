@@ -1,12 +1,14 @@
 import { Controller, Get, Post, Delete, Query, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { SessionsService } from './sessions.service';
+
+import { LogEntryDto } from '../logs/logs.dto';
+
 import {
   SessionSearchDto,
   SessionDto,
   SessionTimelineDto,
 } from './sessions.dto';
-import { LogEntryDto } from '../logs/logs.dto';
+import { SessionsService } from './sessions.service';
 
 @ApiTags('sessions')
 @Controller('sessions')

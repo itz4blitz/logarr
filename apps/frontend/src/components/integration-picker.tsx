@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import { Search, Check, Clock, Sparkles, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState, useMemo } from "react";
+
 import { IntegrationIcon } from "@/components/integration-icon";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   integrations,
   integrationCategories,
@@ -14,6 +14,7 @@ import {
   type Integration,
   type IntegrationCategory,
 } from "@/lib/integrations";
+import { cn } from "@/lib/utils";
 
 interface IntegrationPickerProps {
   onSelect: (integration: Integration) => void;

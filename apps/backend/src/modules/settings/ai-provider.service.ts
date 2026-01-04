@@ -1,8 +1,11 @@
 import { Injectable, Inject, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { eq, and, gte, lte, desc, count, sql } from 'drizzle-orm';
+
 import { DATABASE_CONNECTION } from '../../database';
 import * as schema from '../../database/schema';
+
+import { AI_PROVIDER_BASE, FALLBACK_MODELS } from './settings.dto';
+
 import type {
   AiProviderType,
   AiProviderInfo,
@@ -13,7 +16,7 @@ import type {
   TestProviderResultDto,
   AnalysisResultDto,
 } from './settings.dto';
-import { AI_PROVIDER_BASE, FALLBACK_MODELS } from './settings.dto';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 // Strategy interface for AI providers
 interface AiProviderStrategy {

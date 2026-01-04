@@ -9,9 +9,10 @@ import {
   ParseUUIDPipe,
   Logger,
 } from '@nestjs/common';
-import { IssuesService } from './issues.service';
-import { IssuesGateway } from './issues.gateway';
+
 import { IssueSearchDto, UpdateIssueDto, MergeIssuesDto } from './issues.dto';
+import { IssuesGateway } from './issues.gateway';
+import { IssuesService } from './issues.service';
 
 @Controller('issues')
 export class IssuesController {

@@ -1,7 +1,6 @@
 "use client";
 
-import { use } from "react";
-import Link from "next/link";
+import { formatDistanceToNow, format, formatDuration, intervalToDuration } from "date-fns";
 import {
   ArrowLeft,
   Activity,
@@ -14,8 +13,10 @@ import {
   Globe,
   Server,
 } from "lucide-react";
-import { formatDistanceToNow, format, formatDuration, intervalToDuration } from "date-fns";
+import Link from "next/link";
+import { use } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,12 +25,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSession, useSessionLogs, useServer } from "@/hooks/use-api";
+import { cn } from "@/lib/utils";
 
 function getDeviceIcon(deviceName?: string | null, clientName?: string | null) {
   const name = (deviceName || clientName || "").toLowerCase();

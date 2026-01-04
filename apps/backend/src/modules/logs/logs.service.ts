@@ -1,9 +1,11 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { and, eq, gte, lte, inArray, sql, desc, count } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+
 import { DATABASE_CONNECTION } from '../../database';
 import * as schema from '../../database/schema';
+
 import type { LogSearchDto } from './logs.dto';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 @Injectable()
 export class LogsService {

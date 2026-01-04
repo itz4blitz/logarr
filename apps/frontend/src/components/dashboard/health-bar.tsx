@@ -1,8 +1,10 @@
 "use client";
 
 import { CheckCircle, AlertTriangle, XCircle, Server, Activity, Radio } from "lucide-react";
-import { cn } from "@/lib/utils";
+
 import type { DashboardHealth } from "@/lib/api";
+
+import { cn } from "@/lib/utils";
 
 interface HealthBarProps {
   health: DashboardHealth;

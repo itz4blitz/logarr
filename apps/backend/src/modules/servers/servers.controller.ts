@@ -10,7 +10,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { ServersService } from './servers.service';
+
 import {
   CreateServerDto,
   UpdateServerDto,
@@ -18,6 +18,7 @@ import {
   ConnectionStatusDto,
   ProviderDto,
 } from './servers.dto';
+import { ServersService } from './servers.service';
 
 @ApiTags('servers')
 @Controller('servers')

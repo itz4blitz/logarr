@@ -1,12 +1,17 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { IssuesService } from './issues.service';
+import { Test } from '@nestjs/testing';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+
 import { DATABASE_CONNECTION } from '../../database';
-import { AiProviderService } from '../settings/ai-provider.service';
-import { IssueContextService } from './issue-context.service';
-import { AnalysisPromptBuilder } from './analysis-prompt-builder';
 import { createMockDb, configureMockDb, type MockDb } from '../../test/mock-db';
+import { AiProviderService } from '../settings/ai-provider.service';
+
+import { AnalysisPromptBuilder } from './analysis-prompt-builder';
+import { IssueContextService } from './issue-context.service';
+import { IssuesService } from './issues.service';
+
+import type { TestingModule } from '@nestjs/testing';
 
 describe('IssuesService', () => {
   let service: IssuesService;
@@ -396,7 +401,7 @@ describe('IssuesService', () => {
     it('should handle single source as string', async () => {
       configureMockDb(mockDb, { select: [] });
 
-      await service.search({ sources: 'jellyfin' as unknown as string[] });
+      await service.search({ sources: ['jellyfin'] });
 
       expect(mockDb.select).toHaveBeenCalled();
     });
@@ -436,7 +441,7 @@ describe('IssuesService', () => {
     it('should limit results to 100 max', async () => {
       configureMockDb(mockDb, { select: [] });
 
-      const results = await service.search({ limit: 200 });
+      await service.search({ limit: 200 });
 
       // The limit is capped at 100 internally
       expect(mockDb.select).toHaveBeenCalled();

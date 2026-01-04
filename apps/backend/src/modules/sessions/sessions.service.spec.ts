@@ -1,9 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
-import { SessionsService } from './sessions.service';
+import { Test } from '@nestjs/testing';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+
 import { DATABASE_CONNECTION } from '../../database';
 import { createMockDb, configureMockDb, type MockDb } from '../../test/mock-db';
+
+import { SessionsService } from './sessions.service';
+
+import type { TestingModule } from '@nestjs/testing';
 
 describe('SessionsService', () => {
   let service: SessionsService;
@@ -302,7 +307,7 @@ describe('SessionsService', () => {
 
       const result = await service.search({});
 
-      expect(result[0].nowPlaying).toBeNull();
+      expect(result[0]?.nowPlaying).toBeNull();
     });
   });
 });

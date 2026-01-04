@@ -1,8 +1,9 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { and, eq, gte, sql, desc, count, inArray } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { eq, gte, sql, desc, count, inArray } from 'drizzle-orm';
+
 import { DATABASE_CONNECTION } from '../../database';
 import * as schema from '../../database/schema';
+
 import type {
   DashboardDataDto,
   ActivityHourDto,
@@ -13,6 +14,7 @@ import type {
   RecentEventDto,
   TopLogSourceDto,
 } from './dashboard.dto';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 @Injectable()
 export class DashboardService {
@@ -105,7 +107,7 @@ export class DashboardService {
     const currentErrorRate = todayTotal > 0 ? todayErrors / todayTotal : 0;
 
     // Calculate error rate trend (simplified - just show daily values scaled 0-100)
-    const errorRateTrend = dailyLogCounts.map((_, i) => Math.random() * 5); // Placeholder for actual calculation
+    const errorRateTrend = dailyLogCounts.map(() => Math.random() * 5); // Placeholder for actual calculation
 
     const logVolumeTrend = dailyLogCounts.slice(-7);
     const sessionTrend = dailySessionCounts.slice(-7);

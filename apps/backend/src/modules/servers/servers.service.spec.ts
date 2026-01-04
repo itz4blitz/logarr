@@ -1,11 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
-import { ServersService } from './servers.service';
+import { Test } from '@nestjs/testing';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+
 import { DATABASE_CONNECTION } from '../../database';
+import { createMockDb, configureMockDb, type MockDb } from '../../test/mock-db';
 import { FileIngestionService } from '../file-ingestion/file-ingestion.service';
 import { IngestionService } from '../ingestion/ingestion.service';
-import { createMockDb, configureMockDb, type MockDb } from '../../test/mock-db';
+
+import { ServersService } from './servers.service';
+
+import type { TestingModule } from '@nestjs/testing';
 
 describe('ServersService', () => {
   let service: ServersService;
@@ -175,7 +180,6 @@ describe('ServersService', () => {
         logPaths: ['/var/log/jellyfin'],
       };
 
-      let callCount = 0;
       mockDb.select = vi.fn().mockImplementation(() => {
         const result = [serverWithIngestion];
         return {

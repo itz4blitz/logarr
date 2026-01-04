@@ -1,8 +1,7 @@
 "use client";
 
 import { Zap, AlertTriangle, Activity, Server } from "lucide-react";
-import { useDashboardStats, useActiveSessions, useServers } from "@/hooks/use-api";
-import { useSessionSocket } from "@/hooks/use-session-socket";
+
 import {
   HealthBar,
   ActivityChart,
@@ -12,6 +11,8 @@ import {
   SourcesCard,
   TopIssuesCard,
 } from "@/components/dashboard";
+import { useDashboardStats, useActiveSessions, useServers } from "@/hooks/use-api";
+import { useSessionSocket } from "@/hooks/use-session-socket";
 
 export default function DashboardPage() {
   const { data, isLoading } = useDashboardStats();

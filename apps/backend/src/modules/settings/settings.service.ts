@@ -1,7 +1,9 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+
 import { DATABASE_CONNECTION } from '../../database';
 import * as schema from '../../database/schema';
+
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 // General app settings interface
 export interface AppSettings {

@@ -2,10 +2,12 @@
  * Radarr provider implementation
  */
 
-import type { NormalizedActivity } from '@logarr/core';
 import { ArrBaseProvider, ArrClient, RADARR_LOG_FILE_CONFIG, type ArrHistoryRecordBase, type ArrPaginatedResponse } from '@logarr/provider-arr';
-import type { RadarrHistoryRecord, RadarrQueueItem } from './radarr.types.js';
+
 import { RadarrEventTypeNames } from './radarr.types.js';
+
+import type { RadarrHistoryRecord, RadarrQueueItem } from './radarr.types.js';
+import type { NormalizedActivity } from '@logarr/core';
 
 // Local interface until core package is rebuilt
 interface LogFileConfig {
@@ -116,7 +118,7 @@ export class RadarrProvider extends ArrBaseProvider {
     let description = '';
 
     const movieTitle = radarrRecord.movie?.title ?? 'Unknown Movie';
-    const movieYear = radarrRecord.movie?.year ? ` (${radarrRecord.movie.year})` : '';
+    const movieYear = radarrRecord.movie?.year !== undefined && radarrRecord.movie.year !== 0 ? ` (${radarrRecord.movie.year})` : '';
 
     switch (activityType) {
       case 'grab':

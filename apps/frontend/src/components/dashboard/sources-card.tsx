@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
-import { Server, ChevronRight, ChevronLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ProviderIcon, getProviderMeta } from "@/components/provider-icon";
-import { ConnectionStatus, ConnectionStatusBadge } from "@/components/connection-status";
-import { cn } from "@/lib/utils";
-import { useFitToViewport, useFitToViewportPagination } from "@/hooks/use-fit-to-viewport";
+import { Server, ChevronRight, ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import { useState, useEffect, useMemo } from "react";
+
 import type { DashboardSource } from "@/lib/api";
+
+import { ConnectionStatus, ConnectionStatusBadge } from "@/components/connection-status";
+import { ProviderIcon, getProviderMeta } from "@/components/provider-icon";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useFitToViewport, useFitToViewportPagination } from "@/hooks/use-fit-to-viewport";
+import { cn } from "@/lib/utils";
+
 
 interface SourcesCardProps {
   sources: DashboardSource[];

@@ -210,18 +210,25 @@ const LEVEL_MAP: Record<string, LogLevel> = {
  */
 export function parseArrLogLine(line: string): ParsedLogEntry | null {
   const trimmed = line.trim();
-  if (!trimmed) return null;
+  if (trimmed === '') return null;
 
   const match = trimmed.match(NLOG_LINE_REGEX);
   if (!match) return null;
 
-  const [, timestampStr, levelStr, source, message] = match;
+  const timestampStr = match[1];
+  const levelStr = match[2];
+  const source = match[3];
+  const message = match[4];
+
+  if (timestampStr === undefined || levelStr === undefined || source === undefined || message === undefined) {
+    return null;
+  }
 
   return {
-    timestamp: new Date(timestampStr!),
-    level: LEVEL_MAP[levelStr!] ?? 'info',
-    message: message!,
-    source: source!,
+    timestamp: new Date(timestampStr),
+    level: LEVEL_MAP[levelStr] ?? 'info',
+    message,
+    source,
     raw: line,
   };
 }
@@ -237,7 +244,7 @@ export function parseArrLogLine(line: string): ParsedLogEntry | null {
  */
 export function isArrLogContinuation(line: string): boolean {
   const trimmed = line.trim();
-  if (!trimmed) return false;
+  if (trimmed === '') return false;
 
   // Stack trace lines (C#/.NET format)
   if (/^\s{2,}at\s+/.test(line)) return true;
@@ -303,7 +310,8 @@ export function parseArrLogLineWithContext(
     if (exceptionMatch) {
       exception = exceptionMatch[1];
       // Append exception message to the main message if it's different
-      if (exceptionMatch[2] && !message.includes(exceptionMatch[2])) {
+      const exceptionMessage = exceptionMatch[2];
+      if (exceptionMessage !== undefined && exceptionMessage !== '' && !message.includes(exceptionMessage)) {
         message = `${message} - ${exceptionMatch[2]}`;
       }
     }
@@ -361,26 +369,29 @@ export function extractArrMetadata(message: string): Record<string, string> {
 
   // Download ID
   const downloadIdMatch = message.match(/DownloadId[=:\s]+"?([a-zA-Z0-9]+)"?/i);
-  if (downloadIdMatch) {
-    metadata['downloadId'] = downloadIdMatch[1]!;
+  if (downloadIdMatch?.[1] !== undefined) {
+    metadata['downloadId'] = downloadIdMatch[1];
   }
 
   // Indexer
   const indexerMatch = message.match(/\[([^\]]+)\]|Indexer[=:\s]+"?([^"\s,]+)"?/i);
-  if (indexerMatch) {
-    metadata['indexer'] = indexerMatch[1] ?? indexerMatch[2]!;
+  if (indexerMatch !== null) {
+    const indexerValue = indexerMatch[1] ?? indexerMatch[2];
+    if (indexerValue !== undefined) {
+      metadata['indexer'] = indexerValue;
+    }
   }
 
   // Release/Title patterns
   const releaseMatch = message.match(/(?:Release|Title)[=:\s]+"?([^"]+)"?/i);
-  if (releaseMatch) {
-    metadata['release'] = releaseMatch[1]!;
+  if (releaseMatch?.[1] !== undefined) {
+    metadata['release'] = releaseMatch[1];
   }
 
   // Quality
   const qualityMatch = message.match(/Quality[=:\s]+"?([^"\s,]+)"?/i);
-  if (qualityMatch) {
-    metadata['quality'] = qualityMatch[1]!;
+  if (qualityMatch?.[1] !== undefined) {
+    metadata['quality'] = qualityMatch[1];
   }
 
   return metadata;

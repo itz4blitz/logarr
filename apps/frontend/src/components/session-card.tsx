@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { formatDistanceToNow, intervalToDuration } from "date-fns";
 import {
   Play,
   Pause,
@@ -15,15 +15,16 @@ import {
   Zap,
   Radio,
 } from "lucide-react";
-import { formatDistanceToNow, intervalToDuration } from "date-fns";
 import Image from "next/image";
+import { useMemo } from "react";
+
+import type { Session, Server } from "@/lib/api";
 
 import { ProviderIcon } from "@/components/provider-icon";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import type { Session, Server } from "@/lib/api";
 
 function DeviceIcon({
   deviceName,

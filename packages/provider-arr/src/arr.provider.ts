@@ -3,6 +3,21 @@
  * Implements common functionality shared by Sonarr, Radarr, etc.
  */
 
+
+import { ArrClient } from './arr.client.js';
+import {
+  parseArrLogLine,
+  parseArrLogLineWithContext,
+  isArrLogContinuation,
+  ARR_LOG_FILE_CONFIG,
+} from './arr.parser.js';
+
+import type {
+  ArrHealthCheck,
+  ArrHistoryRecordBase,
+  ArrQueueItemBase,
+  ArrActivityType,
+} from './arr.types.js';
 import type {
   MediaServerProvider,
   ProviderCapabilities,
@@ -15,20 +30,6 @@ import type {
   NormalizedActivity,
   ServerInfo,
 } from '@logarr/core';
-
-import { ArrClient } from './arr.client.js';
-import type {
-  ArrHealthCheck,
-  ArrHistoryRecordBase,
-  ArrQueueItemBase,
-  ArrActivityType,
-} from './arr.types.js';
-import {
-  parseArrLogLine,
-  parseArrLogLineWithContext,
-  isArrLogContinuation,
-  ARR_LOG_FILE_CONFIG,
-} from './arr.parser.js';
 
 // Local interfaces until core package is rebuilt
 interface LogFileConfig {
@@ -87,9 +88,10 @@ export abstract class ArrBaseProvider implements MediaServerProvider {
     await this.client.testConnection();
   }
 
-  async disconnect(): Promise<void> {
+  disconnect(): Promise<void> {
     this.client = null;
     this.config = null;
+    return Promise.resolve();
   }
 
   async testConnection(): Promise<ConnectionStatus> {
@@ -102,7 +104,7 @@ export abstract class ArrBaseProvider implements MediaServerProvider {
       return {
         connected: true,
         serverInfo: {
-          name: status.instanceName || status.appName,
+          name: status.instanceName !== undefined && status.instanceName !== '' ? status.instanceName : status.appName,
           version: status.version,
           id: `${status.appName}-${status.branch}`,
         },
@@ -115,10 +117,10 @@ export abstract class ArrBaseProvider implements MediaServerProvider {
     }
   }
 
-  async getLogPaths(): Promise<readonly string[]> {
+  getLogPaths(): Promise<readonly string[]> {
     // *arr apps store logs in their app data folder
     // The exact path varies by installation
-    return [];
+    return Promise.resolve([]);
   }
 
   /**
@@ -158,14 +160,14 @@ export abstract class ArrBaseProvider implements MediaServerProvider {
     ];
   }
 
-  async getSessions(): Promise<readonly NormalizedSession[]> {
+  getSessions(): Promise<readonly NormalizedSession[]> {
     // *arr apps don't have playback sessions
-    return [];
+    return Promise.resolve([]);
   }
 
-  async getUsers(): Promise<readonly NormalizedUser[]> {
+  getUsers(): Promise<readonly NormalizedUser[]> {
     // *arr apps don't expose user management through API
-    return [];
+    return Promise.resolve([]);
   }
 
   async getActivity(since?: Date): Promise<readonly NormalizedActivity[]> {
@@ -206,7 +208,7 @@ export abstract class ArrBaseProvider implements MediaServerProvider {
     const client = this.getClient();
     const status = await client.getSystemStatus();
     return {
-      name: status.instanceName || status.appName,
+      name: status.instanceName !== undefined && status.instanceName !== '' ? status.instanceName : status.appName,
       version: status.version,
       id: `${status.appName}-${status.branch}`,
     };
@@ -267,7 +269,7 @@ export abstract class ArrBaseProvider implements MediaServerProvider {
    */
   protected normalizeQueueItems(items: readonly ArrQueueItemBase[]): NormalizedActivity[] {
     return items
-      .filter((item) => item.trackedDownloadStatus === 'warning' || item.errorMessage)
+      .filter((item) => item.trackedDownloadStatus === 'warning' || item.errorMessage !== undefined)
       .map((item) => ({
         id: `queue-${item.downloadId}-${Date.now()}`,
         type: 'queue_warning' as const,

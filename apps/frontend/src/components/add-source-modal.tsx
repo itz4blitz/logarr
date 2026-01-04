@@ -1,9 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useForm, useFormContext } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod/v3";
 import {
   ArrowLeft,
   Check,
@@ -12,10 +9,17 @@ import {
   Plus,
   Sparkles,
 } from "lucide-react";
+import { useState, useCallback } from "react";
+import { useForm, useFormContext } from "react-hook-form";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { z } from "zod/v3";
 
+
+import { IntegrationIcon } from "@/components/integration-icon";
+import { IntegrationPicker } from "@/components/integration-picker";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -34,6 +38,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -41,18 +46,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-
-import { IntegrationPicker } from "@/components/integration-picker";
-import { IntegrationIcon } from "@/components/integration-icon";
 import { useCreateServer } from "@/hooks/use-api";
 import {
   type Integration,
   type ConfigField,
   getIntegrationById,
 } from "@/lib/integrations";
+import { cn } from "@/lib/utils";
 
 interface AddSourceModalProps {
   trigger?: React.ReactNode;

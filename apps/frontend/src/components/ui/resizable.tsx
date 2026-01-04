@@ -1,7 +1,7 @@
 "use client"
 
-import * as React from "react"
 import { GripVerticalIcon } from "lucide-react"
+import * as React from "react"
 import {
   Group as ResizablePrimitiveGroup,
   Panel as ResizablePrimitivePanel,

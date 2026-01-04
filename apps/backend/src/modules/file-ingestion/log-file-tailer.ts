@@ -1,7 +1,10 @@
-import { createReadStream, statSync, unwatchFile, Stats } from 'fs';
-import { createInterface, Interface } from 'readline';
+import { createReadStream, statSync, unwatchFile } from 'fs';
+import { createInterface } from 'readline';
+
+import type { LogFileProcessor } from './log-file-processor';
 import type { MediaServerProvider, ParsedLogEntry } from '@logarr/core';
-import { LogFileProcessor } from './log-file-processor';
+import type { Stats } from 'fs';
+import type { Interface } from 'readline';
 
 // Local interfaces until core package is rebuilt
 interface LogFileState {

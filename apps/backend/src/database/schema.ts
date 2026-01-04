@@ -1,3 +1,4 @@
+import { relations, sql } from 'drizzle-orm';
 import {
   pgTable,
   text,
@@ -12,7 +13,6 @@ import {
   pgEnum,
   real,
 } from 'drizzle-orm/pg-core';
-import { relations, sql } from 'drizzle-orm';
 
 // Enums for Issues system
 export const issueStatusEnum = pgEnum('issue_status', ['open', 'acknowledged', 'in_progress', 'resolved', 'ignored']);

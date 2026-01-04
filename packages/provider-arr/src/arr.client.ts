@@ -94,7 +94,7 @@ export class ArrClient {
       pageSize: options?.pageSize ?? 50,
       sortKey: options?.sortKey ?? 'time',
       sortDirection: options?.sortDirection ?? 'descending',
-      ...(options?.level && options.level !== 'all' ? { level: options.level } : {}),
+      ...(options?.level !== undefined && options.level !== 'all' ? { level: options.level } : {}),
     });
   }
 

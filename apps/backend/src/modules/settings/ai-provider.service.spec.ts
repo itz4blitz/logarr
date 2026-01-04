@@ -1,9 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { AiProviderService } from './ai-provider.service';
+import { Test } from '@nestjs/testing';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+
 import { DATABASE_CONNECTION } from '../../database';
 import { createMockDb, configureMockDb, type MockDb } from '../../test/mock-db';
+
+import { AiProviderService } from './ai-provider.service';
+
+import type { TestingModule } from '@nestjs/testing';
 
 describe('AiProviderService', () => {
   let service: AiProviderService;
@@ -117,7 +122,7 @@ describe('AiProviderService', () => {
 
       const result = await service.getProviderSettings();
 
-      expect(result[0].hasApiKey).toBe(true);
+      expect(result[0]?.hasApiKey).toBe(true);
       expect(result[0]).not.toHaveProperty('apiKey');
     });
   });
@@ -292,8 +297,6 @@ describe('AiProviderService', () => {
     });
 
     it('should return failure when no API key', async () => {
-      const settingWithoutKey = { ...mockProviderSetting, apiKey: null };
-
       let callCount = 0;
       mockDb.select = vi.fn().mockImplementation(() => {
         callCount++;

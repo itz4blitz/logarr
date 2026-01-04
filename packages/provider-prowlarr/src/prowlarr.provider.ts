@@ -5,10 +5,12 @@
  * RSS syncs, and grab events across all configured indexers.
  */
 
-import type { NormalizedActivity } from '@logarr/core';
 import { ArrBaseProvider, ArrClient, PROWLARR_LOG_FILE_CONFIG, type ArrHistoryRecordBase, type ArrPaginatedResponse } from '@logarr/provider-arr';
-import type { ProwlarrHistoryRecord, ProwlarrIndexer } from './prowlarr.types.js';
+
 import { ProwlarrEventTypeNames } from './prowlarr.types.js';
+
+import type { ProwlarrHistoryRecord, ProwlarrIndexer } from './prowlarr.types.js';
+import type { NormalizedActivity } from '@logarr/core';
 
 // Local interface until core package is rebuilt
 interface LogFileConfig {
@@ -115,7 +117,7 @@ export class ProwlarrProvider extends ArrBaseProvider {
 
     switch (eventTypeName) {
       case 'Query':
-        title = `Search: ${prowlarrRecord.query || 'Unknown Query'}`;
+        title = `Search: ${prowlarrRecord.query !== undefined && prowlarrRecord.query !== '' ? prowlarrRecord.query : 'Unknown Query'}`;
         description = `Searched ${indexerName}${prowlarrRecord.successful === false ? ' (failed)' : ''}`;
         break;
       case 'Grabbed':
@@ -132,7 +134,7 @@ export class ProwlarrProvider extends ArrBaseProvider {
         break;
       default:
         title = `${eventTypeName}: ${indexerName}`;
-        description = prowlarrRecord.sourceTitle || '';
+        description = prowlarrRecord.sourceTitle ?? '';
     }
 
     return {

@@ -1,9 +1,12 @@
+import * as crypto from 'crypto';
+
 import { Injectable, Inject } from '@nestjs/common';
 import { eq, and, gte, desc, asc, sql, count } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as crypto from 'crypto';
+
 import { DATABASE_CONNECTION } from '../../database';
 import * as schema from '../../database/schema';
+
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 /**
  * Context gathered for deep AI analysis of an issue

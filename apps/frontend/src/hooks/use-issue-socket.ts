@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect, useCallback, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { io, Socket } from "socket.io-client";
+import { useEffect, useCallback, useRef, useState } from "react";
+import { io } from "socket.io-client";
+
 import { queryKeys } from "./use-api";
+
 import type { Issue } from "@/lib/api";
+import type { Socket } from "socket.io-client";
+
 import { config } from "@/lib/config";
 
 const WS_URL = config.wsUrl;
@@ -39,6 +43,7 @@ export function useIssueSocket(options: UseIssueSocketOptions = {}) {
   const { enabled = true, serverId, onNewIssue, onIssueUpdate, onIssueResolved, onBackfillProgress } = options;
   const queryClient = useQueryClient();
   const socketRef = useRef<Socket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   const handleNewIssue = useCallback(
     (payload: IssueUpdatePayload) => {
@@ -119,12 +124,14 @@ export function useIssueSocket(options: UseIssueSocketOptions = {}) {
 
     socket.on("connect", () => {
       console.log("[IssueSocket] Connected to issues namespace");
+      setIsConnected(true);
       // Subscribe to updates
-      socket.emit("subscribe", { serverId: serverId || undefined });
+      socket.emit("subscribe", { serverId: serverId ?? undefined });
     });
 
     socket.on("disconnect", () => {
       console.log("[IssueSocket] Disconnected from issues namespace");
+      setIsConnected(false);
     });
 
     socket.on("connect_error", (error) => {
@@ -139,7 +146,7 @@ export function useIssueSocket(options: UseIssueSocketOptions = {}) {
     socket.on("backfill:progress", handleBackfillProgress);
 
     return () => {
-      socket.emit("unsubscribe", { serverId: serverId || undefined });
+      socket.emit("unsubscribe", { serverId: serverId ?? undefined });
       socket.off("issue:new", handleNewIssue);
       socket.off("issue:updated", handleIssueUpdate);
       socket.off("issue:resolved", handleIssueResolved);
@@ -151,6 +158,6 @@ export function useIssueSocket(options: UseIssueSocketOptions = {}) {
   }, [enabled, serverId, handleNewIssue, handleIssueUpdate, handleIssueResolved, handleStatsUpdate, handleBackfillProgress]);
 
   return {
-    connected: socketRef.current?.connected ?? false,
+    connected: isConnected,
   };
 }

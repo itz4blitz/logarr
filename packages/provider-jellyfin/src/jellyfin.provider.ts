@@ -1,3 +1,14 @@
+
+import { JellyfinClient } from './jellyfin.client.js';
+import {
+  JELLYFIN_CORRELATION_PATTERNS,
+  JELLYFIN_LOG_FILE_CONFIG,
+  isJellyfinLogContinuation,
+  parseJellyfinLogLine,
+  parseJellyfinLogLineWithContext,
+} from './jellyfin.parser.js';
+
+import type { JellyfinActivityLogEntry, JellyfinSession, JellyfinUser } from './jellyfin.types.js';
 import type {
   ConnectionStatus,
   CorrelationPattern,
@@ -14,16 +25,6 @@ import type {
   ProviderConfig,
   ServerInfo,
 } from '@logarr/core';
-
-import { JellyfinClient } from './jellyfin.client.js';
-import {
-  JELLYFIN_CORRELATION_PATTERNS,
-  JELLYFIN_LOG_FILE_CONFIG,
-  isJellyfinLogContinuation,
-  parseJellyfinLogLine,
-  parseJellyfinLogLineWithContext,
-} from './jellyfin.parser.js';
-import type { JellyfinActivityLogEntry, JellyfinSession, JellyfinUser } from './jellyfin.types.js';
 
 /**
  * Jellyfin media server provider
@@ -49,9 +50,10 @@ export class JellyfinProvider implements MediaServerProvider {
     await this.client.connect();
   }
 
-  async disconnect(): Promise<void> {
+  disconnect(): Promise<void> {
     this.client = null;
     this.config = null;
+    return Promise.resolve();
   }
 
   async testConnection(): Promise<ConnectionStatus> {
@@ -78,17 +80,17 @@ export class JellyfinProvider implements MediaServerProvider {
     }
   }
 
-  async getLogPaths(): Promise<readonly string[]> {
+  getLogPaths(): Promise<readonly string[]> {
     if (this.config?.logPath !== undefined) {
-      return [this.config.logPath];
+      return Promise.resolve([this.config.logPath]);
     }
 
     // Default Jellyfin log paths for different platforms
-    return [
+    return Promise.resolve([
       '/config/log', // Docker
       '/var/lib/jellyfin/log', // Linux
       'C:\\ProgramData\\Jellyfin\\Server\\log', // Windows
-    ];
+    ]);
   }
 
   parseLogLine(line: string): ParsedLogEntry | null {
@@ -164,8 +166,9 @@ export class JellyfinProvider implements MediaServerProvider {
   }
 
   private normalizeSession(session: JellyfinSession): NormalizedSession {
-    const hasNowPlaying =
-      session.NowPlayingItem !== undefined && session.PlayState !== undefined;
+    const nowPlayingItem = session.NowPlayingItem;
+    const playState = session.PlayState;
+    const hasNowPlaying = nowPlayingItem !== undefined && playState !== undefined;
 
     return {
       id: session.Id,
@@ -182,13 +185,13 @@ export class JellyfinProvider implements MediaServerProvider {
       isActive: session.IsActive,
       nowPlaying: hasNowPlaying
         ? {
-            itemId: session.NowPlayingItem!.Id,
-            itemName: session.NowPlayingItem!.Name,
-            itemType: session.NowPlayingItem!.Type,
-            positionTicks: session.PlayState!.PositionTicks,
-            durationTicks: session.NowPlayingItem!.RunTimeTicks,
-            isPaused: session.PlayState!.IsPaused,
-            isMuted: session.PlayState!.IsMuted,
+            itemId: nowPlayingItem.Id,
+            itemName: nowPlayingItem.Name,
+            itemType: nowPlayingItem.Type,
+            positionTicks: playState.PositionTicks,
+            durationTicks: nowPlayingItem.RunTimeTicks,
+            isPaused: playState.IsPaused,
+            isMuted: playState.IsMuted,
             isTranscoding: session.TranscodingInfo !== undefined,
             transcodeReasons: session.TranscodingInfo?.TranscodeReasons,
             videoCodec: session.TranscodingInfo?.VideoCodec,

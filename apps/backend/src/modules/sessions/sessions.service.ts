@@ -1,9 +1,11 @@
 import { Injectable, Inject, NotFoundException, Logger } from '@nestjs/common';
-import { and, eq, gte, lte, desc, count, inArray, isNull, or, sql } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import { and, eq, gte, lte, desc, count, inArray, isNull, or } from 'drizzle-orm';
+
 import { DATABASE_CONNECTION } from '../../database';
 import * as schema from '../../database/schema';
+
 import type { SessionSearchDto, NowPlayingDto } from './sessions.dto';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 @Injectable()
 export class SessionsService {

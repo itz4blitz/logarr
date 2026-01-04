@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
 import { AlertTriangle, ChevronRight, ChevronLeft } from "lucide-react";
+import Link from "next/link";
+import { useState, useEffect, useMemo } from "react";
+
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 import { useFitToViewport, useFitToViewportPagination } from "@/hooks/use-fit-to-viewport";
+import { cn } from "@/lib/utils";
 
 interface Issue {
   id: string;

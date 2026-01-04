@@ -1,13 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import {
   Sparkles,
   CheckCircle,
   AlertTriangle,
   AlertCircle,
   Info,
-  ChevronDown,
   Send,
   Loader2,
   Users,
@@ -17,18 +15,20 @@ import {
   Lightbulb,
   Search,
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useState } from 'react';
+
+import { MarkdownRenderer } from '@/components/markdown-renderer';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { MarkdownRenderer } from '@/components/markdown-renderer';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
 // Types matching backend response

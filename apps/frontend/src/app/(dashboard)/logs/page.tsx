@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import { format, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
 import {
   Search,
   RefreshCw,
@@ -22,27 +20,20 @@ import {
   AlertCircle,
   CheckCircle,
   Eye,
-  Clock,
-  Server,
   Hash,
   User,
   Tv,
   Activity,
 } from "lucide-react";
-import { format, differenceInMinutes, differenceInHours, differenceInDays } from "date-fns";
+import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useMemo, useRef, useEffect, Suspense } from "react";
+
+import type { LogEntry, Server as ServerType, LogEntryDetails } from "@/lib/api";
 
 import { ProviderIcon } from "@/components/provider-icon";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -50,12 +41,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useLogs, useServers, useLogDetails } from "@/hooks/use-api";
 import { useLogSocket } from "@/hooks/use-log-socket";
-import type { LogEntry, Server as ServerType, LogEntryDetails } from "@/lib/api";
 import { getActivityTypeInfo } from "@/lib/activity-types";
+import { cn } from "@/lib/utils";
 
 const LOG_LEVELS = ["debug", "info", "warn", "error"] as const;
 const LOG_SOURCE_TYPES = ["api", "file"] as const;
@@ -107,26 +106,6 @@ function SeverityBadge({ severity }: { severity: string }) {
     <Badge variant="outline" className={cn("text-xs gap-1", config.color)}>
       {config.icon}
       {severity}
-    </Badge>
-  );
-}
-
-// Status badge for related issues
-function StatusBadge({ status }: { status: string }) {
-  const statusConfig: Record<string, { color: string; icon: React.ReactNode }> = {
-    open: { color: "bg-red-500/10 text-red-500 border-red-500/30", icon: <AlertCircle className="h-3 w-3" /> },
-    acknowledged: { color: "bg-yellow-500/10 text-yellow-500 border-yellow-500/30", icon: <Eye className="h-3 w-3" /> },
-    in_progress: { color: "bg-blue-500/10 text-blue-500 border-blue-500/30", icon: <Activity className="h-3 w-3" /> },
-    resolved: { color: "bg-green-500/10 text-green-500 border-green-500/30", icon: <CheckCircle className="h-3 w-3" /> },
-    ignored: { color: "bg-gray-500/10 text-gray-400 border-gray-500/30", icon: <X className="h-3 w-3" /> },
-  };
-
-  const config = statusConfig[status] || statusConfig.open;
-
-  return (
-    <Badge variant="outline" className={cn("text-xs gap-1", config.color)}>
-      {config.icon}
-      {status.replace("_", " ")}
     </Badge>
   );
 }

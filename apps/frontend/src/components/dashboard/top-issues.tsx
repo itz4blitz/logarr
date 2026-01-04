@@ -1,13 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { AlertTriangle, ArrowRight } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+import type { DashboardTopIssue } from "@/lib/api";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import type { DashboardTopIssue } from "@/lib/api";
+
 
 interface TopIssuesProps {
   issues: DashboardTopIssue[];
