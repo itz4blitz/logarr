@@ -1,12 +1,14 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
-import Link from "next/link";
 import { PlayCircle, ChevronRight, ChevronLeft } from "lucide-react";
-import { SessionCard, SessionCardSkeleton } from "@/components/session-card";
-import { cn } from "@/lib/utils";
-import { useFitToViewport, useFitToViewportPagination } from "@/hooks/use-fit-to-viewport";
+import Link from "next/link";
+import { useMemo, useState, useEffect } from "react";
+
 import type { Session, Server } from "@/lib/api";
+
+import { SessionCard, SessionCardSkeleton } from "@/components/session-card";
+import { useFitToViewport, useFitToViewportPagination } from "@/hooks/use-fit-to-viewport";
+import { cn } from "@/lib/utils";
 
 interface NowPlayingCardProps {
   sessions: Session[];

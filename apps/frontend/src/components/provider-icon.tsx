@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils";
 import { getIntegrationById } from "@/lib/integrations";
+import { cn } from "@/lib/utils";
 
 interface ProviderIconProps {
   providerId: string;

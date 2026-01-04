@@ -1,8 +1,8 @@
 "use client"
 
+import * as TabsPrimitive from "@radix-ui/react-tabs"
 import * as React from "react"
 import { useId } from "react"
-import * as TabsPrimitive from "@radix-ui/react-tabs"
 
 import { cn } from "@/lib/utils"
 

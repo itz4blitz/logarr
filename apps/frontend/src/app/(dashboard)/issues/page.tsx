@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect, useMemo, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import { format, formatDistanceToNow } from "date-fns";
 import {
   Search,
   AlertTriangle,
@@ -38,34 +36,19 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
+import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useCallback, useRef, useEffect, useMemo, Suspense } from "react";
+import { toast } from "sonner";
 
+import type { Issue, IssueSeverity, IssueStatus, IssueSource, DeepAnalysisResult, ConversationMessage } from "@/lib/api";
+
+import { AnalysisDisplay } from "@/components/analysis-display";
 import { ProviderIcon } from "@/components/provider-icon";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -73,9 +56,30 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   useIssues,
   useIssueStats,
@@ -91,10 +95,9 @@ import {
   useDefaultAiProvider,
 } from "@/hooks/use-api";
 import { useIssueSocket, type BackfillProgress } from "@/hooks/use-issue-socket";
-import { toast } from "sonner";
-import { Progress } from "@/components/ui/progress";
-import type { Issue, IssueSeverity, IssueStatus, IssueSource, DeepAnalysisResult, ConversationMessage } from "@/lib/api";
-import { AnalysisDisplay } from "@/components/analysis-display";
+import { cn } from "@/lib/utils";
+
+
 
 const SEVERITIES: IssueSeverity[] = ["critical", "high", "medium", "low", "info"];
 const ROW_HEIGHT = 52; // Height of each issue row - fixed height for consistent sizing
@@ -935,7 +938,7 @@ function IssueDetailModal({
                       </div>
 
                       {/* Full-width 24h Activity Chart */}
-                      {timeline && timeline.hourly && timeline.hourly.length > 0 && (
+                      {timeline?.hourly && timeline.hourly.length > 0 && (
                         <div className="bg-muted/20 rounded-xl p-4 border border-white/5">
                           <div className="flex items-center justify-between mb-3">
                             <h4 className="text-sm font-medium flex items-center gap-2">

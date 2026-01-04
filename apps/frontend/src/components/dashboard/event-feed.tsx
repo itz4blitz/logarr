@@ -1,11 +1,13 @@
 "use client";
 
+import { formatDistanceToNow } from "date-fns";
 import { AlertCircle, CheckCircle, Server, Zap } from "lucide-react";
+
+import type { DashboardRecentEvent } from "@/lib/api";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
-import type { DashboardRecentEvent } from "@/lib/api";
 
 interface EventFeedProps {
   events: DashboardRecentEvent[];

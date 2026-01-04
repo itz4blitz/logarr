@@ -10,8 +10,10 @@ import {
   ParseUUIDPipe,
   Logger,
 } from '@nestjs/common';
-import { SettingsService } from './settings.service';
+
 import { AiProviderService } from './ai-provider.service';
+import { SettingsService } from './settings.service';
+
 import type {
   CreateAiProviderDto,
   UpdateAiProviderDto,

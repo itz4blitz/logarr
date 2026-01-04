@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Activity,
   Clock,
@@ -15,10 +14,14 @@ import {
   Pause,
   Zap,
 } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 
+import type { Session, Server } from '@/lib/api';
+
+import { SessionCard, SessionCardSkeleton } from '@/components/session-card';
+import { SessionDetailModal } from '@/components/session-detail-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,11 +30,10 @@ import {
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSessions, useActiveSessions, useServers } from '@/hooks/use-api';
 import { useSessionSocket } from '@/hooks/use-session-socket';
-import { SessionCard, SessionCardSkeleton } from '@/components/session-card';
-import { SessionDetailModal } from '@/components/session-detail-modal';
-import type { Session, Server } from '@/lib/api';
+
 
 // ============================================================================
 // Constants

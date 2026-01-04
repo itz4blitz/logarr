@@ -1,12 +1,15 @@
 "use client";
 
-import Link from "next/link";
 import { PlayCircle, ArrowRight, Film, Music, Tv } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Progress } from "@/components/ui/progress";
+import Link from "next/link";
+
 import type { DashboardNowPlaying } from "@/lib/api";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+
 
 interface NowPlayingProps {
   sessions: DashboardNowPlaying[];

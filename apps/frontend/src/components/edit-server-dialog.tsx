@@ -1,9 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod/v3";
 import {
   Loader2,
   FileText,
@@ -17,14 +14,20 @@ import {
   FolderOpen,
   FileSearch,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { ProviderIcon, getProviderMeta } from "@/components/provider-icon";
+import { z } from "zod/v3";
+
+import type { Server as ServerType } from "@/lib/api";
+
 import {
   ConnectionTestToastContent,
   getToastType,
   getToastTitle,
 } from "@/components/connection-test-toast";
-
+import { ProviderIcon, getProviderMeta } from "@/components/provider-icon";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -50,9 +53,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUpdateServer, useTestConnection } from "@/hooks/use-api";
-import type { Server as ServerType } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const formSchema = z.object({

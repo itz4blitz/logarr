@@ -1,9 +1,11 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { LogsController } from './logs.controller';
-import { LogsService } from './logs.service';
-import { LogsGateway } from './logs.gateway';
+
 import { FileIngestionModule } from '../file-ingestion/file-ingestion.module';
 import { IngestionModule } from '../ingestion/ingestion.module';
+
+import { LogsController } from './logs.controller';
+import { LogsGateway } from './logs.gateway';
+import { LogsService } from './logs.service';
 
 @Module({
   imports: [

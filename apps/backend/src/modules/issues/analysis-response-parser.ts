@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+
 import type { StructuredAnalysis, Recommendation } from './analysis-response.types';
 
 const logger = new Logger('AnalysisResponseParser');

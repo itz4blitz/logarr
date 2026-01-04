@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { renderHook, waitFor } from '@testing-library/react';
 import { createElement, type ReactNode } from 'react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import {
   queryKeys,
   useHealth,
@@ -16,6 +17,7 @@ import {
   useIssueStats,
   useAiProviderSettings,
 } from './use-api';
+
 import { api } from '@/lib/api';
 
 vi.mock('@/lib/api', () => ({

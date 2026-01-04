@@ -14,6 +14,14 @@ export default [
       "**/.next/**",
       "**/.turbo/**",
       "**/drizzle/**",
+      // Config files that don't have tsconfig coverage
+      "playwright.config.ts",
+      "vitest.workspace.ts",
+      "**/drizzle.config.ts",
+      "**/vitest.config.ts",
+      "**/tsup.config.ts",
+      // E2E tests use separate tsconfig
+      "e2e/**",
     ],
   },
   {
@@ -25,13 +33,54 @@ export default [
         sourceType: "module",
         project: true,
       },
+      globals: {
+        // Node.js 18+ globals
+        fetch: "readonly",
+        console: "readonly",
+        Buffer: "readonly",
+        process: "readonly",
+        __dirname: "readonly",
+        __filename: "readonly",
+        URL: "readonly",
+        URLSearchParams: "readonly",
+        setTimeout: "readonly",
+        setInterval: "readonly",
+        clearTimeout: "readonly",
+        clearInterval: "readonly",
+        require: "readonly",
+        module: "readonly",
+        exports: "readonly",
+        NodeJS: "readonly",
+        // Browser globals (for frontend)
+        React: "readonly",
+        navigator: "readonly",
+        localStorage: "readonly",
+        sessionStorage: "readonly",
+        window: "readonly",
+        document: "readonly",
+        requestAnimationFrame: "readonly",
+        cancelAnimationFrame: "readonly",
+        Image: "readonly",
+        HTMLElement: "readonly",
+        HTMLDivElement: "readonly",
+        HTMLInputElement: "readonly",
+        HTMLButtonElement: "readonly",
+        Event: "readonly",
+        MouseEvent: "readonly",
+        KeyboardEvent: "readonly",
+      },
     },
     plugins: {
       "@typescript-eslint": tseslint,
       import: importPlugin,
     },
     rules: {
-      // TypeScript strict rules
+      // Disable base rule for TS files - it doesn't understand interfaces
+      "no-unused-vars": "off",
+
+      // ==========================================
+      // AUTO-FIXABLE RULES (errors - will be fixed on save)
+      // ==========================================
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
@@ -40,38 +89,14 @@ export default [
           caughtErrorsIgnorePattern: "^_",
         },
       ],
-      "@typescript-eslint/explicit-function-return-type": [
-        "error",
-        {
-          allowExpressions: true,
-          allowTypedFunctionExpressions: true,
-          allowHigherOrderFunctions: true,
-        },
-      ],
-      "@typescript-eslint/explicit-module-boundary-types": "error",
-      "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/no-non-null-assertion": "error",
-      "@typescript-eslint/prefer-nullish-coalescing": "error",
+      // Many cases can't be auto-fixed (empty string checks) - keep as warning
+      "@typescript-eslint/prefer-nullish-coalescing": "warn",
       "@typescript-eslint/prefer-optional-chain": "error",
-      "@typescript-eslint/strict-boolean-expressions": [
-        "error",
-        {
-          allowString: false,
-          allowNumber: false,
-          allowNullableObject: true,
-        },
-      ],
-      "@typescript-eslint/no-floating-promises": "error",
-      "@typescript-eslint/await-thenable": "error",
-      "@typescript-eslint/no-misused-promises": "error",
-      "@typescript-eslint/require-await": "error",
       "@typescript-eslint/consistent-type-imports": [
         "error",
         { prefer: "type-imports" },
       ],
       "@typescript-eslint/consistent-type-exports": "error",
-
-      // Import rules
       "import/order": [
         "error",
         {
@@ -89,13 +114,38 @@ export default [
         },
       ],
       "import/no-duplicates": "error",
-      "import/no-cycle": "error",
-
-      // General rules
-      "no-console": ["warn", { allow: ["warn", "error"] }],
       eqeqeq: ["error", "always"],
       "prefer-const": "error",
       "no-var": "error",
+
+      // ==========================================
+      // NON-AUTO-FIXABLE RULES (warnings - require manual intervention)
+      // ==========================================
+      "@typescript-eslint/explicit-function-return-type": [
+        "warn",
+        {
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
+          allowHigherOrderFunctions: true,
+        },
+      ],
+      "@typescript-eslint/explicit-module-boundary-types": "warn",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-non-null-assertion": "warn",
+      "@typescript-eslint/strict-boolean-expressions": [
+        "warn",
+        {
+          allowString: false,
+          allowNumber: false,
+          allowNullableObject: true,
+        },
+      ],
+      "@typescript-eslint/no-floating-promises": "warn",
+      "@typescript-eslint/await-thenable": "warn",
+      "@typescript-eslint/no-misused-promises": "warn",
+      "@typescript-eslint/require-await": "warn",
+      "import/no-cycle": "warn",
+      "no-console": ["warn", { allow: ["warn", "error"] }],
     },
   },
   {

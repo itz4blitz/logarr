@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { io, Socket } from "socket.io-client";
+import { io } from "socket.io-client";
+
 import type { LogEntry } from "@/lib/api";
+import type { Socket } from "socket.io-client";
+
 import { config } from "@/lib/config";
 
 const SOCKET_URL = config.wsUrl;
@@ -87,7 +90,8 @@ export function useLogSocket(options: UseLogSocketOptions = {}) {
 
   // Re-subscribe when filters change
   useEffect(() => {
-    if (!socketRef.current?.connected) return;
+    const socket = socketRef.current;
+    if (socket === null || !connected) return;
 
     const newSubscription: LogSubscription = { serverId, levels, logSources };
     const currentSub = subscriptionRef.current;
@@ -99,12 +103,11 @@ export function useLogSocket(options: UseLogSocketOptions = {}) {
       JSON.stringify(newSubscription.logSources) !== JSON.stringify(currentSub.logSources);
 
     if (filtersChanged) {
-      socketRef.current.emit("unsubscribe");
-      socketRef.current.emit("subscribe", newSubscription);
+      socket.emit("unsubscribe");
+      socket.emit("subscribe", newSubscription);
       subscriptionRef.current = newSubscription;
-      setLogs([]); // Clear logs when filters change
     }
-  }, [serverId, levels, logSources]);
+  }, [connected, serverId, levels, logSources]);
 
   return { connected, logs, clearLogs };
 }

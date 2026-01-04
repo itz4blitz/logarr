@@ -1,8 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { formatDistanceToNow, format, intervalToDuration } from "date-fns";
 import {
   Play,
   Pause,
@@ -31,26 +29,30 @@ import {
   History,
   ChevronRight,
 } from "lucide-react";
-import { formatDistanceToNow, format, intervalToDuration } from "date-fns";
+import Image from "next/image";
+import Link from "next/link";
+import { useState, useEffect } from "react";
 
+import type { Session, Server, LogEntry, Issue } from "@/lib/api";
+
+import { ProviderIcon, getProviderMeta } from "@/components/provider-icon";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ProviderIcon, getProviderMeta } from "@/components/provider-icon";
-import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSessionLogs, useIssues, useSessions } from "@/hooks/use-api";
 import { useSessionSocket } from "@/hooks/use-session-socket";
-import type { Session, Server, LogEntry, Issue } from "@/lib/api";
+import { cn } from "@/lib/utils";
+
 
 // ============================================================================
 // Utility Functions

@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+
 import type {
   JellyfinActivityLogEntry,
   JellyfinQueryResult,
@@ -272,25 +273,25 @@ export class JellyfinClient extends EventEmitter {
 
         case 'Sessions':
           // Full session list update
-          if (message.Data) {
+          if (message.Data !== undefined && message.Data !== null) {
             this.emit('sessions', message.Data as JellyfinSessionsData);
           }
           break;
 
         case 'PlaybackStart':
-          if (message.Data) {
+          if (message.Data !== undefined && message.Data !== null) {
             this.emit('playbackStart', message.Data as JellyfinPlaybackEventData);
           }
           break;
 
         case 'PlaybackStopped':
-          if (message.Data) {
+          if (message.Data !== undefined && message.Data !== null) {
             this.emit('playbackStop', message.Data as JellyfinPlaybackEventData);
           }
           break;
 
         case 'PlaybackProgress':
-          if (message.Data) {
+          if (message.Data !== undefined && message.Data !== null) {
             this.emit('playbackProgress', message.Data as JellyfinPlaybackProgressData);
           }
           break;

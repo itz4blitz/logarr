@@ -1,17 +1,22 @@
+import { createHash } from 'crypto';
+
 import { Injectable, Inject, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { eq, and } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+
 import { DATABASE_CONNECTION } from '../../database';
 import * as schema from '../../database/schema';
-import { LogFileTailer } from './log-file-tailer';
-import { LogFileProcessor } from './log-file-processor';
-import { FileStateService } from './file-state.service';
-import { FileDiscoveryService } from './file-discovery.service';
-import { LogsGateway } from '../logs/logs.gateway';
-import { IssuesService } from '../issues/issues.service';
 import { IssuesGateway } from '../issues/issues.gateway';
+import { IssuesService } from '../issues/issues.service';
+import { LogsGateway } from '../logs/logs.gateway';
+
+import { FileDiscoveryService } from './file-discovery.service';
+import { FileStateService } from './file-state.service';
+import { LogFileProcessor } from './log-file-processor';
+import { LogFileTailer } from './log-file-tailer';
+
+
 import type { MediaServerProvider, ParsedLogEntry } from '@logarr/core';
-import { createHash } from 'crypto';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 // Type guard for providers with file ingestion support
 interface FileIngestionProvider extends MediaServerProvider {
@@ -21,24 +26,6 @@ interface FileIngestionProvider extends MediaServerProvider {
 
 function hasFileIngestionSupport(provider: MediaServerProvider): provider is FileIngestionProvider {
   return typeof (provider as FileIngestionProvider).getLogFileConfig === 'function';
-}
-
-// LogFileState interface
-interface LogFileState {
-  id: string;
-  serverId: string;
-  filePath: string;
-  absolutePath: string;
-  fileSize: bigint;
-  byteOffset: bigint;
-  lineNumber: number;
-  fileInode: string | null;
-  fileModifiedAt: Date | null;
-  lastReadAt: Date | null;
-  isActive: boolean;
-  lastError: string | null;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 // LogFileConfig interface

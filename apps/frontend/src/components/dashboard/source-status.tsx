@@ -1,15 +1,20 @@
 "use client";
 
-import Link from "next/link";
-import { Server, ArrowRight, Activity } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ConnectionStatus } from "@/components/connection-status";
-import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { Server, ArrowRight, Activity } from "lucide-react";
+import Link from "next/link";
+
 import type { DashboardSource } from "@/lib/api";
+
 import { AddSourceModal } from "@/components/add-source-modal";
+import { ConnectionStatus } from "@/components/connection-status";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+
+
+
 
 interface SourceStatusProps {
   sources: DashboardSource[];

@@ -1,33 +1,17 @@
+import { Test } from '@nestjs/testing';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
-import { DashboardService } from './dashboard.service';
+
+
 import { DATABASE_CONNECTION } from '../../database';
 import { createMockDb, configureMockDb, type MockDb } from '../../test/mock-db';
+
+import { DashboardService } from './dashboard.service';
+
+import type { TestingModule } from '@nestjs/testing';
 
 describe('DashboardService', () => {
   let service: DashboardService;
   let mockDb: MockDb;
-
-  // Helper to create mock db with numbered call responses
-  const createSequentialMock = (responses: any[][]) => {
-    let callCount = 0;
-    return vi.fn().mockImplementation(() => {
-      const result = responses[callCount] || [];
-      callCount++;
-      return {
-        from: vi.fn().mockReturnThis(),
-        leftJoin: vi.fn().mockReturnThis(),
-        innerJoin: vi.fn().mockReturnThis(),
-        where: vi.fn().mockReturnThis(),
-        groupBy: vi.fn().mockReturnThis(),
-        orderBy: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
-        offset: vi.fn().mockReturnThis(),
-        then: vi.fn().mockImplementation((resolve) => Promise.resolve(result).then(resolve)),
-        [Symbol.toStringTag]: 'Promise',
-      };
-    });
-  };
 
   beforeEach(async () => {
     mockDb = createMockDb();
@@ -574,15 +558,19 @@ describe('DashboardService', () => {
       expect(Array.isArray(result.activityChart)).toBe(true);
       expect(result.activityChart.length).toBe(2);
       // First hour: 5 errors, 10 warns, 100 info, 50 debug
-      expect(result.activityChart[0].error).toBe(5);
-      expect(result.activityChart[0].warn).toBe(10);
-      expect(result.activityChart[0].info).toBe(100);
-      expect(result.activityChart[0].debug).toBe(50);
+      const firstHour = result.activityChart[0];
+      const secondHour = result.activityChart[1];
+      expect(firstHour).toBeDefined();
+      expect(secondHour).toBeDefined();
+      expect(firstHour?.error).toBe(5);
+      expect(firstHour?.warn).toBe(10);
+      expect(firstHour?.info).toBe(100);
+      expect(firstHour?.debug).toBe(50);
       // Second hour: 3 errors, 7 warns, 80 info, 30 debug (case-insensitive)
-      expect(result.activityChart[1].error).toBe(3);
-      expect(result.activityChart[1].warn).toBe(7);
-      expect(result.activityChart[1].info).toBe(80);
-      expect(result.activityChart[1].debug).toBe(30);
+      expect(secondHour?.error).toBe(3);
+      expect(secondHour?.warn).toBe(7);
+      expect(secondHour?.info).toBe(80);
+      expect(secondHour?.debug).toBe(30);
     });
   });
 
@@ -700,7 +688,7 @@ describe('DashboardService', () => {
       // Check that at least one recent event was mapped correctly
       const resolvedEvents = result.recentEvents.filter(e => e.type === 'issue_resolved');
       expect(resolvedEvents.length).toBeGreaterThan(0);
-      expect(resolvedEvents[0].title).toBe('Fixed Bug');
+      expect(resolvedEvents[0]?.title).toBe('Fixed Bug');
     });
 
     it('should map open issues to issue_new type', async () => {
@@ -729,7 +717,7 @@ describe('DashboardService', () => {
       // Check that at least one recent event was mapped correctly
       const newEvents = result.recentEvents.filter(e => e.type === 'issue_new');
       expect(newEvents.length).toBeGreaterThan(0);
-      expect(newEvents[0].title).toBe('New Bug');
+      expect(newEvents[0]?.title).toBe('New Bug');
     });
   });
 });

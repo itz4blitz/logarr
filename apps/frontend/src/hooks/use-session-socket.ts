@@ -1,9 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
+
 import { queryKeys } from "./use-api";
+
+import type { Socket } from "socket.io-client";
+
 import { config } from "@/lib/config";
 
 const SOCKET_URL = config.wsUrl;
@@ -85,15 +89,16 @@ export function useSessionSocket(options: UseSessionSocketOptions = {}) {
 
   // Re-subscribe when filters change
   useEffect(() => {
-    if (!socketRef.current?.connected) return;
+    const socket = socketRef.current;
+    if (socket === null || !connected) return;
 
     const newSubscription: SessionSubscription = { serverId };
     if (newSubscription.serverId !== subscriptionRef.current.serverId) {
-      socketRef.current.emit("unsubscribe");
-      socketRef.current.emit("subscribe", newSubscription);
+      socket.emit("unsubscribe");
+      socket.emit("subscribe", newSubscription);
       subscriptionRef.current = newSubscription;
     }
-  }, [serverId]);
+  }, [connected, serverId]);
 
   return { connected };
 }

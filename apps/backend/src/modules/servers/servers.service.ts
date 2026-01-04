@@ -1,16 +1,18 @@
+import { JellyfinProvider } from '@logarr/provider-jellyfin';
+import { ProwlarrProvider } from '@logarr/provider-prowlarr';
+import { RadarrProvider } from '@logarr/provider-radarr';
+import { SonarrProvider } from '@logarr/provider-sonarr';
 import { Injectable, Inject, NotFoundException, forwardRef, Logger } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+
 import { DATABASE_CONNECTION } from '../../database';
 import * as schema from '../../database/schema';
-import type { CreateServerDto, UpdateServerDto } from './servers.dto';
-import { JellyfinProvider } from '@logarr/provider-jellyfin';
-import { SonarrProvider } from '@logarr/provider-sonarr';
-import { RadarrProvider } from '@logarr/provider-radarr';
-import { ProwlarrProvider } from '@logarr/provider-prowlarr';
-import type { MediaServerProvider } from '@logarr/core';
 import { FileIngestionService } from '../file-ingestion/file-ingestion.service';
 import { IngestionService } from '../ingestion/ingestion.service';
+
+import type { CreateServerDto, UpdateServerDto } from './servers.dto';
+import type { MediaServerProvider } from '@logarr/core';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 @Injectable()
 export class ServersService {

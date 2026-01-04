@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Server,
@@ -14,8 +12,12 @@ import {
   Wifi,
   Container,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-import { cn } from "@/lib/utils";
+import type { ServiceStatus } from "@/lib/api";
+import type { LucideIcon } from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
@@ -36,9 +38,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { ServiceStatus } from "@/lib/api";
 import { useHealth, useServers, useActiveSessions, useLogStats, useIssueStats, useDefaultAiProvider } from "@/hooks/use-api";
-import type { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+
 
 interface ServiceStatusIndicatorProps {
   name: string;

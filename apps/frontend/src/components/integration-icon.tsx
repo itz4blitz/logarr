@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
+
 import { type Integration, getDashboardIconUrl } from "@/lib/integrations";
+import { cn } from "@/lib/utils";
 
 interface IntegrationIconProps {
   integration: Integration;

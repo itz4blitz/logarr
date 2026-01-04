@@ -1,5 +1,8 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { api, CreateServerDto, UpdateServerDto, LogSearchParams, IssueSearchParams, UpdateIssueDto, CreateAiProviderDto, UpdateAiProviderDto, AiProviderType } from '@/lib/api';
+
+import type { CreateServerDto, UpdateServerDto, LogSearchParams, IssueSearchParams, UpdateIssueDto, CreateAiProviderDto, UpdateAiProviderDto, AiProviderType } from '@/lib/api';
+
+import { api } from '@/lib/api';
 
 // Query Keys
 export const queryKeys = {

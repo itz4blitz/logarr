@@ -2,10 +2,12 @@
  * Sonarr provider implementation
  */
 
-import type { NormalizedActivity } from '@logarr/core';
 import { ArrBaseProvider, ArrClient, SONARR_LOG_FILE_CONFIG, type ArrHistoryRecordBase, type ArrPaginatedResponse } from '@logarr/provider-arr';
-import type { SonarrHistoryRecord, SonarrQueueItem } from './sonarr.types.js';
+
 import { SonarrEventTypeNames } from './sonarr.types.js';
+
+import type { SonarrHistoryRecord, SonarrQueueItem } from './sonarr.types.js';
+import type { NormalizedActivity } from '@logarr/core';
 
 // Local interface until core package is rebuilt
 interface LogFileConfig {
@@ -131,7 +133,7 @@ export class SonarrProvider extends ArrBaseProvider {
         break;
       case 'import_complete':
         title = `Imported: ${seriesTitle} ${episodeInfo}`;
-        description = episodeTitle ? `"${episodeTitle}" imported successfully` : 'Episode imported successfully';
+        description = episodeTitle !== '' ? `"${episodeTitle}" imported successfully` : 'Episode imported successfully';
         break;
       case 'download_failed':
         title = `Download Failed: ${seriesTitle} ${episodeInfo}`;
@@ -143,11 +145,11 @@ export class SonarrProvider extends ArrBaseProvider {
         break;
       case 'deleted':
         title = `Deleted: ${seriesTitle} ${episodeInfo}`;
-        description = episodeTitle ? `"${episodeTitle}" was deleted` : 'Episode file was deleted';
+        description = episodeTitle !== '' ? `"${episodeTitle}" was deleted` : 'Episode file was deleted';
         break;
       case 'renamed':
         title = `Renamed: ${seriesTitle} ${episodeInfo}`;
-        description = episodeTitle ? `"${episodeTitle}" was renamed` : 'Episode file was renamed';
+        description = episodeTitle !== '' ? `"${episodeTitle}" was renamed` : 'Episode file was renamed';
         break;
       default:
         title = `${eventTypeName}: ${seriesTitle} ${episodeInfo}`;

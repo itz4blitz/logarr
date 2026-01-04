@@ -1,19 +1,21 @@
+import { JellyfinProvider, JellyfinClient } from '@logarr/provider-jellyfin';
+import { ProwlarrProvider } from '@logarr/provider-prowlarr';
+import { RadarrProvider } from '@logarr/provider-radarr';
+import { SonarrProvider } from '@logarr/provider-sonarr';
 import { Injectable, Inject, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
-import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+
 import { DATABASE_CONNECTION } from '../../database';
 import * as schema from '../../database/schema';
+import { FileIngestionService } from '../file-ingestion/file-ingestion.service';
+import { IssuesGateway } from '../issues/issues.gateway';
+import { IssuesService } from '../issues/issues.service';
 import { LogsGateway } from '../logs/logs.gateway';
 import { SessionsGateway } from '../sessions/sessions.gateway';
-import { IssuesService } from '../issues/issues.service';
-import { IssuesGateway } from '../issues/issues.gateway';
-import { FileIngestionService } from '../file-ingestion/file-ingestion.service';
-import { JellyfinProvider, JellyfinClient } from '@logarr/provider-jellyfin';
-import type { JellyfinSession, JellyfinPlaybackProgressData, JellyfinPlaybackEventData } from '@logarr/provider-jellyfin';
-import { SonarrProvider } from '@logarr/provider-sonarr';
-import { RadarrProvider } from '@logarr/provider-radarr';
-import { ProwlarrProvider } from '@logarr/provider-prowlarr';
+
 import type { MediaServerProvider, NormalizedSession, NormalizedActivity } from '@logarr/core';
+import type { JellyfinSession, JellyfinPlaybackProgressData, JellyfinPlaybackEventData } from '@logarr/provider-jellyfin';
+import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 /**
  * IngestionService - Responsible for polling media servers and ingesting activity data
@@ -306,8 +308,8 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
             itemId: remote.nowPlaying.itemId,
             itemName: remote.nowPlaying.itemName,
             itemType: remote.nowPlaying.itemType,
-            positionTicks: remote.nowPlaying.positionTicks != null ? BigInt(remote.nowPlaying.positionTicks) : null,
-            durationTicks: remote.nowPlaying.durationTicks != null ? BigInt(remote.nowPlaying.durationTicks) : null,
+            positionTicks: remote.nowPlaying.positionTicks !== null && remote.nowPlaying.positionTicks !== undefined ? BigInt(remote.nowPlaying.positionTicks) : null,
+            durationTicks: remote.nowPlaying.durationTicks !== null && remote.nowPlaying.durationTicks !== undefined ? BigInt(remote.nowPlaying.durationTicks) : null,
             isPaused: remote.nowPlaying.isPaused ?? false,
             isMuted: remote.nowPlaying.isMuted ?? false,
             isTranscoding: remote.nowPlaying.isTranscoding ?? false,
@@ -360,8 +362,8 @@ export class IngestionService implements OnModuleInit, OnModuleDestroy {
             itemId: remote.nowPlaying.itemId,
             itemName: remote.nowPlaying.itemName,
             itemType: remote.nowPlaying.itemType,
-            positionTicks: remote.nowPlaying.positionTicks != null ? BigInt(remote.nowPlaying.positionTicks) : null,
-            durationTicks: remote.nowPlaying.durationTicks != null ? BigInt(remote.nowPlaying.durationTicks) : null,
+            positionTicks: remote.nowPlaying.positionTicks !== null && remote.nowPlaying.positionTicks !== undefined ? BigInt(remote.nowPlaying.positionTicks) : null,
+            durationTicks: remote.nowPlaying.durationTicks !== null && remote.nowPlaying.durationTicks !== undefined ? BigInt(remote.nowPlaying.durationTicks) : null,
             isPaused: remote.nowPlaying.isPaused ?? false,
             isMuted: remote.nowPlaying.isMuted ?? false,
             isTranscoding: remote.nowPlaying.isTranscoding ?? false,

@@ -1,12 +1,13 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { Wifi, FileText, Check, X, Minus } from "lucide-react";
+
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Wifi, FileText, Check, X, Minus } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ConnectionStatusProps {
   apiConnected: boolean;

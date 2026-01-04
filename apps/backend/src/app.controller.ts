@@ -1,8 +1,10 @@
 import { Controller, Get, Inject, Optional } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { sql } from 'drizzle-orm';
+
 import { DATABASE_CONNECTION } from './database/database.module';
 import { REDIS_CLIENT } from './redis/redis.module';
-import { sql } from 'drizzle-orm';
+
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import type Redis from 'ioredis';
 

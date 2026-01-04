@@ -1,10 +1,12 @@
 import { Controller, Get, Post, Query, Param, Logger, Inject, forwardRef } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { LogsService } from './logs.service';
-import { LogSearchDto, LogEntryDto, LogStatsDto } from './logs.dto';
+
 import { FileIngestionService } from '../file-ingestion/file-ingestion.service';
 import { IngestionService } from '../ingestion/ingestion.service';
+
+import { LogSearchDto, LogEntryDto, LogStatsDto } from './logs.dto';
 import { LogsGateway } from './logs.gateway';
+import { LogsService } from './logs.service';
 
 @ApiTags('logs')
 @Controller('logs')

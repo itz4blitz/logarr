@@ -1,5 +1,6 @@
 "use client";
 
+import { format, parseISO } from "date-fns";
 import { useMemo, useState, useEffect } from "react";
 import {
   AreaChart,
@@ -10,11 +11,13 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+
 import type { ActivityHour } from "@/lib/api";
-import { format, parseISO } from "date-fns";
+
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+
 
 const TIME_FORMAT_KEY = "logarr-time-format";
 

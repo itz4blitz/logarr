@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { formatDistanceToNow } from "date-fns";
 import {
   Plus,
   Trash2,
@@ -24,33 +24,20 @@ import {
   Activity,
   RefreshCw,
 } from "lucide-react";
+import { useState, useRef } from "react";
 import Markdown from "react-markdown";
-import { formatDistanceToNow } from "date-fns";
+import { toast } from "sonner";
+
+import type {
+  AiProviderType,
+  AiProviderInfo,
+  AiProviderSettings,
+  AiModelInfo,
+  CreateAiProviderDto,
+  UpdateAiProviderDto,
+} from "@/lib/api";
 
 import { ProviderIcon, providerMeta } from "@/components/provider-icon";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,11 +48,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,8 +65,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   useAvailableAiProviders,
   useAiProviderSettings,
@@ -87,14 +95,8 @@ import {
   useAiUsageStats,
   useAiAnalysisHistory,
 } from "@/hooks/use-api";
-import type {
-  AiProviderType,
-  AiProviderInfo,
-  AiProviderSettings,
-  AiModelInfo,
-  CreateAiProviderDto,
-  UpdateAiProviderDto,
-} from "@/lib/api";
+import { cn } from "@/lib/utils";
+
 
 function AiProvidersGrid({
   providers,

@@ -1,8 +1,13 @@
+import { Test } from '@nestjs/testing';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
-import { LogsService } from './logs.service';
+
+
 import { DATABASE_CONNECTION } from '../../database';
 import { createMockDb, configureMockDb, type MockDb } from '../../test/mock-db';
+
+import { LogsService } from './logs.service';
+
+import type { TestingModule } from '@nestjs/testing';
 
 describe('LogsService', () => {
   let service: LogsService;

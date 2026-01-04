@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
-import { useFitToViewport, useFitToViewportPagination } from "@/hooks/use-fit-to-viewport";
+import Link from "next/link";
+
 import type { LogDistribution } from "@/lib/api";
+
+import { Skeleton } from "@/components/ui/skeleton";
+import { useFitToViewport, useFitToViewportPagination } from "@/hooks/use-fit-to-viewport";
+import { cn } from "@/lib/utils";
 
 interface LogDistributionChartProps {
   data: LogDistribution;
