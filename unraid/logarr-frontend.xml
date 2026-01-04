@@ -21,6 +21,6 @@
   <DateInstalled></DateInstalled>
   <Description>Logarr Frontend - A unified logging dashboard for media server stacks. Beautiful Next.js dashboard for viewing, filtering, and searching logs from all your media server applications in real-time.</Description>
   <Config Name="Web UI Port" Target="3000" Default="3001" Mode="tcp" Description="Frontend web UI port" Type="Port" Display="always" Required="true" Mask="false">3001</Config>
-  <Config Name="API URL" Target="NEXT_PUBLIC_API_URL" Default="http://[YOUR_UNRAID_IP]:4001/api" Mode="" Description="Backend API URL. Set to your Logarr backend URL with /api path." Type="Variable" Display="always" Required="true" Mask="false">http://[YOUR_UNRAID_IP]:4001/api</Config>
-  <Config Name="WebSocket URL" Target="NEXT_PUBLIC_WS_URL" Default="ws://[YOUR_UNRAID_IP]:4001" Mode="" Description="Backend WebSocket URL for real-time log streaming." Type="Variable" Display="always" Required="true" Mask="false">ws://[YOUR_UNRAID_IP]:4001</Config>
+  <Config Name="API URL" Target="NEXT_PUBLIC_API_URL" Default="" Mode="" Description="Backend API URL. Example: http://192.168.1.100:4001/api" Type="Variable" Display="always" Required="true" Mask="false"></Config>
+  <Config Name="WebSocket URL" Target="NEXT_PUBLIC_WS_URL" Default="" Mode="" Description="Backend WebSocket URL. Example: ws://192.168.1.100:4001" Type="Variable" Display="always" Required="true" Mask="false"></Config>
 </Container>
