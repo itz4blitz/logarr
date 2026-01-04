@@ -129,7 +129,7 @@ export class IssuesService {
   /**
    * Detect and categorize an error from a log entry
    */
-  categorizeError(message: string, source: string): { category: string; severity: IssueSeverity } {
+  categorizeError(message: string): { category: string; severity: IssueSeverity } {
     const lowerMessage = message.toLowerCase();
 
     // Authentication/Authorization issues
@@ -258,7 +258,7 @@ export class IssuesService {
       return issue.id;
     } else {
       // Create new issue
-      const { category, severity } = this.categorizeError(logEntry.message, logEntry.source || 'unknown');
+      const { category, severity } = this.categorizeError(logEntry.message);
       const title = this.extractTitle(logEntry.message);
 
       // Map server provider to issue source

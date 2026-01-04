@@ -53,14 +53,14 @@ describe('IssuesService', () => {
 
   describe('generateFingerprint', () => {
     it('should generate consistent fingerprints for the same normalized message', () => {
-      const fp1 = service.generateFingerprint('Connection failed', 'jellyfin');
-      const fp2 = service.generateFingerprint('Connection failed', 'jellyfin');
+      const fp1 = service.generateFingerprint('Connection failed');
+      const fp2 = service.generateFingerprint('Connection failed');
       expect(fp1).toBe(fp2);
     });
 
     it('should generate different fingerprints for different sources', () => {
-      const fp1 = service.generateFingerprint('Connection failed', 'jellyfin');
-      const fp2 = service.generateFingerprint('Connection failed', 'sonarr');
+      const fp1 = service.generateFingerprint('Connection failed');
+      const fp2 = service.generateFingerprint('Connection failed');
       expect(fp1).not.toBe(fp2);
     });
 
@@ -77,38 +77,38 @@ describe('IssuesService', () => {
     });
 
     it('should normalize IP addresses', () => {
-      const fp1 = service.generateFingerprint('Connection from 192.168.1.1 failed', 'jellyfin');
-      const fp2 = service.generateFingerprint('Connection from 10.0.0.1 failed', 'jellyfin');
+      const fp1 = service.generateFingerprint('Connection from 192.168.1.1 failed');
+      const fp2 = service.generateFingerprint('Connection from 10.0.0.1 failed');
       expect(fp1).toBe(fp2);
     });
 
     it('should normalize timestamps', () => {
-      const fp1 = service.generateFingerprint('Error at 2024-01-01T12:00:00', 'jellyfin');
-      const fp2 = service.generateFingerprint('Error at 2025-06-15T23:59:59', 'jellyfin');
+      const fp1 = service.generateFingerprint('Error at 2024-01-01T12:00:00');
+      const fp2 = service.generateFingerprint('Error at 2025-06-15T23:59:59');
       expect(fp1).toBe(fp2);
     });
 
     it('should normalize file paths', () => {
-      const fp1 = service.generateFingerprint('File not found: /var/log/app.log', 'jellyfin');
-      const fp2 = service.generateFingerprint('File not found: /home/user/data.txt', 'jellyfin');
+      const fp1 = service.generateFingerprint('File not found: /var/log/app.log');
+      const fp2 = service.generateFingerprint('File not found: /home/user/data.txt');
       expect(fp1).toBe(fp2);
     });
 
     it('should normalize Windows paths', () => {
-      const fp1 = service.generateFingerprint('File not found: C:\\Users\\test\\file.log', 'jellyfin');
-      const fp2 = service.generateFingerprint('File not found: D:\\Data\\other.txt', 'jellyfin');
+      const fp1 = service.generateFingerprint('File not found: C:\\Users\\test\\file.log');
+      const fp2 = service.generateFingerprint('File not found: D:\\Data\\other.txt');
       expect(fp1).toBe(fp2);
     });
 
     it('should normalize numeric IDs', () => {
-      const fp1 = service.generateFingerprint('Item 123456 not found', 'sonarr');
-      const fp2 = service.generateFingerprint('Item 987654 not found', 'sonarr');
+      const fp1 = service.generateFingerprint('Item 123456 not found');
+      const fp2 = service.generateFingerprint('Item 987654 not found');
       expect(fp1).toBe(fp2);
     });
 
     it('should normalize quoted strings', () => {
-      const fp1 = service.generateFingerprint('Failed to process "Movie A"', 'radarr');
-      const fp2 = service.generateFingerprint('Failed to process "Movie B"', 'radarr');
+      const fp1 = service.generateFingerprint('Failed to process "Movie A"');
+      const fp2 = service.generateFingerprint('Failed to process "Movie B"');
       expect(fp1).toBe(fp2);
     });
 
@@ -241,117 +241,117 @@ describe('IssuesService', () => {
   describe('categorizeError', () => {
     describe('authentication category', () => {
       it('should categorize auth-related errors', () => {
-        expect(service.categorizeError('Authentication failed', 'jellyfin').category).toBe('authentication');
-        expect(service.categorizeError('Login attempt blocked', 'jellyfin').category).toBe('authentication');
-        expect(service.categorizeError('Permission denied for user', 'jellyfin').category).toBe('authentication');
-        expect(service.categorizeError('Unauthorized access', 'jellyfin').category).toBe('authentication');
-        expect(service.categorizeError('Forbidden resource', 'jellyfin').category).toBe('authentication');
-        expect(service.categorizeError('Access denied', 'jellyfin').category).toBe('authentication');
+        expect(service.categorizeError('Authentication failed').category).toBe('authentication');
+        expect(service.categorizeError('Login attempt blocked').category).toBe('authentication');
+        expect(service.categorizeError('Permission denied for user').category).toBe('authentication');
+        expect(service.categorizeError('Unauthorized access').category).toBe('authentication');
+        expect(service.categorizeError('Forbidden resource').category).toBe('authentication');
+        expect(service.categorizeError('Access denied').category).toBe('authentication');
       });
 
       it('should assign high severity to auth issues', () => {
-        const result = service.categorizeError('Authentication failed', 'jellyfin');
+        const result = service.categorizeError('Authentication failed');
         expect(result.severity).toBe('high');
       });
     });
 
     describe('database category', () => {
       it('should categorize database-related errors', () => {
-        expect(service.categorizeError('Database connection lost', 'jellyfin').category).toBe('database');
-        expect(service.categorizeError('SQL query failed', 'jellyfin').category).toBe('database');
-        expect(service.categorizeError('Connection refused to postgres', 'jellyfin').category).toBe('database');
-        expect(service.categorizeError('Query failed with error', 'jellyfin').category).toBe('database');
+        expect(service.categorizeError('Database connection lost').category).toBe('database');
+        expect(service.categorizeError('SQL query failed').category).toBe('database');
+        expect(service.categorizeError('Connection refused to postgres').category).toBe('database');
+        expect(service.categorizeError('Query failed with error').category).toBe('database');
       });
 
       it('should assign critical severity to database issues', () => {
-        const result = service.categorizeError('Database connection failed', 'jellyfin');
+        const result = service.categorizeError('Database connection failed');
         expect(result.severity).toBe('critical');
       });
     });
 
     describe('network category', () => {
       it('should categorize network-related errors', () => {
-        expect(service.categorizeError('Connection timeout', 'sonarr').category).toBe('network');
-        expect(service.categorizeError('Network unreachable', 'sonarr').category).toBe('network');
-        expect(service.categorizeError('Socket error', 'sonarr').category).toBe('network');
-        expect(service.categorizeError('DNS lookup failed', 'sonarr').category).toBe('network');
-        expect(service.categorizeError('Host unreachable', 'sonarr').category).toBe('network');
+        expect(service.categorizeError('Connection timeout').category).toBe('network');
+        expect(service.categorizeError('Network unreachable').category).toBe('network');
+        expect(service.categorizeError('Socket error').category).toBe('network');
+        expect(service.categorizeError('DNS lookup failed').category).toBe('network');
+        expect(service.categorizeError('Host unreachable').category).toBe('network');
       });
 
       it('should assign high severity to network issues', () => {
-        const result = service.categorizeError('Connection timeout', 'sonarr');
+        const result = service.categorizeError('Connection timeout');
         expect(result.severity).toBe('high');
       });
     });
 
     describe('transcoding category', () => {
       it('should categorize transcoding-related errors', () => {
-        expect(service.categorizeError('Transcode failed', 'jellyfin').category).toBe('transcoding');
-        expect(service.categorizeError('FFmpeg error', 'jellyfin').category).toBe('transcoding');
-        expect(service.categorizeError('Unsupported codec', 'jellyfin').category).toBe('transcoding');
-        expect(service.categorizeError('Encoding failed', 'jellyfin').category).toBe('transcoding');
+        expect(service.categorizeError('Transcode failed').category).toBe('transcoding');
+        expect(service.categorizeError('FFmpeg error').category).toBe('transcoding');
+        expect(service.categorizeError('Unsupported codec').category).toBe('transcoding');
+        expect(service.categorizeError('Encoding failed').category).toBe('transcoding');
       });
 
       it('should assign medium severity to transcoding issues', () => {
-        const result = service.categorizeError('Transcode failed', 'jellyfin');
+        const result = service.categorizeError('Transcode failed');
         expect(result.severity).toBe('medium');
       });
     });
 
     describe('playback category', () => {
       it('should categorize playback-related errors', () => {
-        expect(service.categorizeError('Playback error', 'jellyfin').category).toBe('playback');
-        expect(service.categorizeError('Stream interrupted', 'jellyfin').category).toBe('playback');
-        expect(service.categorizeError('Buffer underrun', 'jellyfin').category).toBe('playback');
-        expect(service.categorizeError('Media not available', 'jellyfin').category).toBe('playback');
+        expect(service.categorizeError('Playback error').category).toBe('playback');
+        expect(service.categorizeError('Stream interrupted').category).toBe('playback');
+        expect(service.categorizeError('Buffer underrun').category).toBe('playback');
+        expect(service.categorizeError('Media not available').category).toBe('playback');
       });
 
       it('should assign medium severity to playback issues', () => {
-        const result = service.categorizeError('Playback error', 'jellyfin');
+        const result = service.categorizeError('Playback error');
         expect(result.severity).toBe('medium');
       });
     });
 
     describe('filesystem category', () => {
       it('should categorize filesystem-related errors', () => {
-        expect(service.categorizeError('File not found', 'radarr').category).toBe('filesystem');
-        expect(service.categorizeError('Disk full', 'radarr').category).toBe('filesystem');
-        expect(service.categorizeError('Storage unavailable', 'radarr').category).toBe('filesystem');
+        expect(service.categorizeError('File not found').category).toBe('filesystem');
+        expect(service.categorizeError('Disk full').category).toBe('filesystem');
+        expect(service.categorizeError('Storage unavailable').category).toBe('filesystem');
         // Note: "Permission denied" matches auth category first due to keyword priority
-        expect(service.categorizeError('Cannot write to disk', 'radarr').category).toBe('filesystem');
+        expect(service.categorizeError('Cannot write to disk').category).toBe('filesystem');
       });
 
       it('should assign high severity to filesystem issues', () => {
-        const result = service.categorizeError('File not found', 'radarr');
+        const result = service.categorizeError('File not found');
         expect(result.severity).toBe('high');
       });
     });
 
     describe('performance category', () => {
       it('should categorize performance-related errors', () => {
-        expect(service.categorizeError('Out of memory', 'jellyfin').category).toBe('performance');
-        expect(service.categorizeError('Memory allocation failed', 'jellyfin').category).toBe('performance');
-        expect(service.categorizeError('Performance degradation', 'jellyfin').category).toBe('performance');
-        expect(service.categorizeError('Response too slow', 'jellyfin').category).toBe('performance');
+        expect(service.categorizeError('Out of memory').category).toBe('performance');
+        expect(service.categorizeError('Memory allocation failed').category).toBe('performance');
+        expect(service.categorizeError('Performance degradation').category).toBe('performance');
+        expect(service.categorizeError('Response too slow').category).toBe('performance');
       });
 
       it('should assign high severity to performance issues', () => {
-        const result = service.categorizeError('Out of memory', 'jellyfin');
+        const result = service.categorizeError('Out of memory');
         expect(result.severity).toBe('high');
       });
     });
 
     describe('general category', () => {
       it('should default to general category for unknown errors', () => {
-        const result = service.categorizeError('Some random error', 'jellyfin');
+        const result = service.categorizeError('Some random error');
         expect(result.category).toBe('general');
         expect(result.severity).toBe('medium');
       });
     });
 
     it('should be case insensitive', () => {
-      expect(service.categorizeError('DATABASE ERROR', 'jellyfin').category).toBe('database');
-      expect(service.categorizeError('AUTHENTICATION FAILED', 'jellyfin').category).toBe('authentication');
+      expect(service.categorizeError('DATABASE ERROR').category).toBe('database');
+      expect(service.categorizeError('AUTHENTICATION FAILED').category).toBe('authentication');
     });
   });
 

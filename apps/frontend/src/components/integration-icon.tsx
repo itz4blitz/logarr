@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-import { type Integration, getDashboardIconUrl } from "@/lib/integrations";
+import { type Integration, getDashboardIconUrl, getIntegrationById } from "@/lib/integrations";
 import { cn } from "@/lib/utils";
 
 interface IntegrationIconProps {
@@ -207,7 +207,6 @@ export function IntegrationIconById({
   className?: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
 }) {
-  const { getIntegrationById } = require("@/lib/integrations");
   const integration = getIntegrationById(integrationId);
 
   if (!integration) {
