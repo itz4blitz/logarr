@@ -31,6 +31,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="h-full overflow-hidden">
       <head>
         {/* Runtime config injection for Docker deployments - must load before React hydration */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="/__config.js" />
       </head>
       <body
