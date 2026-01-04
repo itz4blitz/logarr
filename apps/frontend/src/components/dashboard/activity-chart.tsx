@@ -14,7 +14,6 @@ import {
 
 import type { ActivityHour } from "@/lib/api";
 
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 

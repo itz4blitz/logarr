@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useId } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,8 @@ interface SparklineProps {
 }
 
 function Sparkline({ data, className, positive = true }: SparklineProps) {
+  const gradientId = useId();
+
   if (!data.length || data.length < 2) return null;
 
   const max = Math.max(...data, 1);
@@ -37,7 +40,6 @@ function Sparkline({ data, className, positive = true }: SparklineProps) {
   // Gradient fill path
   const fillPath = `${pathData} L ${width} ${height} L 0 ${height} Z`;
 
-  const gradientId = `sparkline-gradient-${Math.random().toString(36).slice(2)}`;
   const strokeColor = positive ? "#10b981" : "#f43f5e";
   const fillColorStart = positive ? "rgba(16, 185, 129, 0.3)" : "rgba(244, 63, 94, 0.3)";
   const fillColorEnd = positive ? "rgba(16, 185, 129, 0)" : "rgba(244, 63, 94, 0)";

@@ -18,12 +18,10 @@ import {
   Check,
   Loader2,
   AlertCircle,
-  CheckCircle,
   Eye,
   Hash,
   User,
   Tv,
-  Activity,
 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";

@@ -7,7 +7,7 @@ import { useState, useEffect, useMemo } from "react";
 
 import type { DashboardSource } from "@/lib/api";
 
-import { ConnectionStatus, ConnectionStatusBadge } from "@/components/connection-status";
+import { ConnectionStatus } from "@/components/connection-status";
 import { ProviderIcon, getProviderMeta } from "@/components/provider-icon";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFitToViewport, useFitToViewportPagination } from "@/hooks/use-fit-to-viewport";

@@ -1,4 +1,4 @@
-import { statSync } from 'fs';
+import { statSync, type Stats } from 'fs';
 import { resolve, basename } from 'path';
 
 import { Injectable, Inject, Logger } from '@nestjs/common';
@@ -251,7 +251,7 @@ export class FileStateService {
   /**
    * Get file inode as string
    */
-  private getInode(stats: import('fs').Stats): string | null {
+  private getInode(stats: Stats): string | null {
     if (stats.ino !== 0) {
       return stats.ino.toString();
     }

@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync } from 'fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
 import { platform, homedir } from 'os';
 import { join, resolve } from 'path';
 
@@ -208,7 +208,7 @@ export class FileDiscoveryService {
     // Check cgroup (Linux)
     try {
       if (existsSync('/proc/1/cgroup')) {
-        const cgroup = require('fs').readFileSync('/proc/1/cgroup', 'utf8');
+        const cgroup = readFileSync('/proc/1/cgroup', 'utf8');
         if (cgroup.includes('docker') || cgroup.includes('kubepods')) {
           return true;
         }
