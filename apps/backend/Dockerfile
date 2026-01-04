@@ -52,13 +52,17 @@ COPY --from=builder /app/packages/provider-prowlarr/dist ./packages/provider-pro
 # Copy backend
 COPY --from=builder /app/apps/backend/package.json ./apps/backend/
 COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
+COPY --from=builder /app/apps/backend/drizzle ./apps/backend/drizzle
+COPY --from=builder /app/apps/backend/drizzle.config.ts ./apps/backend/
+COPY --from=builder /app/apps/backend/src/database ./apps/backend/src/database
 
-# Install production dependencies only
+# Install production dependencies + drizzle-kit for migrations
 RUN pnpm install --frozen-lockfile --prod
+RUN pnpm add -w drizzle-kit
 
 # Expose port
 EXPOSE 4000
 
-# Start the application
+# Start the application with migrations
 WORKDIR /app/apps/backend
-CMD ["node", "dist/main.js"]
+CMD ["sh", "-c", "pnpm drizzle-kit push && node dist/main.js"]
