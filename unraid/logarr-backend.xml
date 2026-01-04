@@ -25,5 +25,6 @@
   <Config Name="Redis URL" Target="REDIS_URL" Default="redis://logarr-redis:6379" Mode="" Description="Redis connection string. Use container name 'logarr-redis' if using the Logarr Redis container." Type="Variable" Display="always" Required="true" Mask="false">redis://logarr-redis:6379</Config>
   <Config Name="CORS Origin" Target="CORS_ORIGIN" Default="" Mode="" Description="Frontend URL for CORS. Example: http://192.168.1.100:3001 - Set to your Logarr frontend URL." Type="Variable" Display="always" Required="true" Mask="false"></Config>
   <Config Name="Node Environment" Target="NODE_ENV" Default="production" Mode="" Description="Node.js environment" Type="Variable" Display="advanced" Required="false" Mask="false">production</Config>
+  <Config Name="Backend Port" Target="BACKEND_PORT" Default="4000" Mode="" Description="Internal port the backend listens on" Type="Variable" Display="advanced" Required="true" Mask="false">4000</Config>
   <Config Name="Log Files Path" Target="/app/logs" Default="/mnt/user/appdata/logarr/logs" Mode="rw" Description="Path to log files you want to ingest. Mount your application log directories here." Type="Path" Display="always" Required="false" Mask="false">/mnt/user/appdata/logarr/logs</Config>
 </Container>
