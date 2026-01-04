@@ -53,14 +53,14 @@ describe('IssuesService', () => {
 
   describe('generateFingerprint', () => {
     it('should generate consistent fingerprints for the same normalized message', () => {
-      const fp1 = service.generateFingerprint('Connection failed');
-      const fp2 = service.generateFingerprint('Connection failed');
+      const fp1 = service.generateFingerprint('Connection failed', 'jellyfin');
+      const fp2 = service.generateFingerprint('Connection failed', 'jellyfin');
       expect(fp1).toBe(fp2);
     });
 
     it('should generate different fingerprints for different sources', () => {
-      const fp1 = service.generateFingerprint('Connection failed');
-      const fp2 = service.generateFingerprint('Connection failed');
+      const fp1 = service.generateFingerprint('Connection failed', 'jellyfin');
+      const fp2 = service.generateFingerprint('Connection failed', 'sonarr');
       expect(fp1).not.toBe(fp2);
     });
 
@@ -77,38 +77,38 @@ describe('IssuesService', () => {
     });
 
     it('should normalize IP addresses', () => {
-      const fp1 = service.generateFingerprint('Connection from 192.168.1.1 failed');
-      const fp2 = service.generateFingerprint('Connection from 10.0.0.1 failed');
+      const fp1 = service.generateFingerprint('Connection from 192.168.1.1 failed', 'jellyfin');
+      const fp2 = service.generateFingerprint('Connection from 10.0.0.1 failed', 'jellyfin');
       expect(fp1).toBe(fp2);
     });
 
     it('should normalize timestamps', () => {
-      const fp1 = service.generateFingerprint('Error at 2024-01-01T12:00:00');
-      const fp2 = service.generateFingerprint('Error at 2025-06-15T23:59:59');
+      const fp1 = service.generateFingerprint('Error at 2024-01-01T12:00:00', 'jellyfin');
+      const fp2 = service.generateFingerprint('Error at 2025-06-15T23:59:59', 'jellyfin');
       expect(fp1).toBe(fp2);
     });
 
     it('should normalize file paths', () => {
-      const fp1 = service.generateFingerprint('File not found: /var/log/app.log');
-      const fp2 = service.generateFingerprint('File not found: /home/user/data.txt');
+      const fp1 = service.generateFingerprint('File not found: /var/log/app.log', 'jellyfin');
+      const fp2 = service.generateFingerprint('File not found: /home/user/data.txt', 'jellyfin');
       expect(fp1).toBe(fp2);
     });
 
     it('should normalize Windows paths', () => {
-      const fp1 = service.generateFingerprint('File not found: C:\\Users\\test\\file.log');
-      const fp2 = service.generateFingerprint('File not found: D:\\Data\\other.txt');
+      const fp1 = service.generateFingerprint('File not found: C:\\Users\\test\\file.log', 'jellyfin');
+      const fp2 = service.generateFingerprint('File not found: D:\\Data\\other.txt', 'jellyfin');
       expect(fp1).toBe(fp2);
     });
 
     it('should normalize numeric IDs', () => {
-      const fp1 = service.generateFingerprint('Item 123456 not found');
-      const fp2 = service.generateFingerprint('Item 987654 not found');
+      const fp1 = service.generateFingerprint('Item 123456 not found', 'jellyfin');
+      const fp2 = service.generateFingerprint('Item 987654 not found', 'jellyfin');
       expect(fp1).toBe(fp2);
     });
 
     it('should normalize quoted strings', () => {
-      const fp1 = service.generateFingerprint('Failed to process "Movie A"');
-      const fp2 = service.generateFingerprint('Failed to process "Movie B"');
+      const fp1 = service.generateFingerprint('Failed to process "Movie A"', 'jellyfin');
+      const fp2 = service.generateFingerprint('Failed to process "Movie B"', 'jellyfin');
       expect(fp1).toBe(fp2);
     });
 
