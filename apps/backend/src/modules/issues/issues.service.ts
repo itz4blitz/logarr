@@ -11,6 +11,15 @@ import { AnalysisPromptBuilder } from './analysis-prompt-builder';
 import { parseAnalysisResponse } from './analysis-response-parser';
 import type { StructuredAnalysis, AnalysisResult, FollowUpResult, ConversationMessage } from './analysis-response.types';
 
+/**
+ * Normalize a query parameter that should be an array.
+ * NestJS returns a string when only one value is provided, and an array when multiple.
+ */
+function normalizeArrayParam<T>(value: T | T[] | undefined): T[] | undefined {
+  if (value === undefined) return undefined;
+  return Array.isArray(value) ? value : [value];
+}
+
 @Injectable()
 export class IssuesService {
   private readonly logger = new Logger(IssuesService.name);
@@ -312,22 +321,27 @@ export class IssuesService {
    * Search for issues with filters
    */
   async search(params: IssueSearchDto) {
+    // Normalize array parameters (NestJS passes single values as strings, not arrays)
+    const sources = normalizeArrayParam(params.sources);
+    const severities = normalizeArrayParam(params.severities);
+    const statuses = normalizeArrayParam(params.statuses);
+
     const conditions = [];
 
     if (params.serverId) {
       conditions.push(eq(schema.issues.serverId, params.serverId));
     }
 
-    if (params.sources && params.sources.length > 0) {
-      conditions.push(inArray(schema.issues.source, params.sources as any));
+    if (sources && sources.length > 0) {
+      conditions.push(inArray(schema.issues.source, sources as any));
     }
 
-    if (params.severities && params.severities.length > 0) {
-      conditions.push(inArray(schema.issues.severity, params.severities as any));
+    if (severities && severities.length > 0) {
+      conditions.push(inArray(schema.issues.severity, severities as any));
     }
 
-    if (params.statuses && params.statuses.length > 0) {
-      conditions.push(inArray(schema.issues.status, params.statuses as any));
+    if (statuses && statuses.length > 0) {
+      conditions.push(inArray(schema.issues.status, statuses as any));
     }
 
     if (params.category) {
