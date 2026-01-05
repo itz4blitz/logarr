@@ -1,4 +1,8 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { existsSync, readdirSync, statSync } from 'fs';
+import { platform, homedir } from 'os';
+
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { FileDiscoveryService } from './file-discovery.service';
 
 // Mock the fs module
@@ -14,9 +18,6 @@ vi.mock('os', () => ({
   platform: vi.fn(() => 'linux'),
   homedir: vi.fn(() => '/home/testuser'),
 }));
-
-import { existsSync, readdirSync, statSync } from 'fs';
-import { platform, homedir } from 'os';
 
 describe('FileDiscoveryService', () => {
   let service: FileDiscoveryService;
