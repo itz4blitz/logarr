@@ -535,12 +535,10 @@ describe('AiProviderService', () => {
       };
 
       // First call returns the setting, second call returns the API key
-      let callCount = 0;
       mockDb.select.mockImplementation(() => ({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
             limit: vi.fn().mockImplementation(() => {
-              callCount++;
               return Promise.resolve([mockSetting]);
             }),
           }),
