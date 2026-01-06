@@ -467,17 +467,9 @@ describe('RetentionService', () => {
       let deleteCallCount = 0;
       mockDb.delete = vi.fn().mockImplementation(() => {
         deleteCallCount++;
-        // Generate results based on call count
-        // First few calls return batchSize items to trigger the loop
-        const batchSize = defaultRetentionSettings.batchSize;
-        let resultCount = 0;
-
         // For first 4 log level deletes, return empty
         // 5th call (orphaned) returns empty
-        if (deleteCallCount <= 5) {
-          resultCount = 0;
-        }
-
+        const resultCount = deleteCallCount <= 5 ? 0 : 0;
         const result = Array(resultCount).fill({ id: 'test-id' });
 
         return {
