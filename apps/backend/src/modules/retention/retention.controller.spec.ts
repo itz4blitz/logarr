@@ -6,9 +6,9 @@ import { SettingsService } from '../settings/settings.service';
 import { RetentionController } from './retention.controller';
 import { RetentionService } from './retention.service';
 
-import type { TestingModule } from '@nestjs/testing';
-import type { RetentionSettings } from '../settings/settings.service';
 import type { RetentionConfig, StorageStats, CleanupPreview, RetentionResult } from './retention.dto';
+import type { RetentionSettings } from '../settings/settings.service';
+import type { TestingModule } from '@nestjs/testing';
 
 describe('RetentionController', () => {
   let controller: RetentionController;

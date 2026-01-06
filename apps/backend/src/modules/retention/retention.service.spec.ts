@@ -7,8 +7,8 @@ import { SettingsService } from '../settings/settings.service';
 
 import { RetentionService } from './retention.service';
 
-import type { TestingModule } from '@nestjs/testing';
 import type { RetentionSettings } from '../settings/settings.service';
+import type { TestingModule } from '@nestjs/testing';
 
 describe('RetentionService', () => {
   let service: RetentionService;
@@ -376,7 +376,6 @@ describe('RetentionService', () => {
   describe('getInfoCutoffDate', () => {
     it('should calculate correct cutoff date', () => {
       const getCutoff = service['getInfoCutoffDate'].bind(service);
-      const now = new Date();
 
       const cutoff = getCutoff(30);
 
@@ -391,7 +390,6 @@ describe('RetentionService', () => {
   describe('getErrorCutoffDate', () => {
     it('should calculate correct cutoff date', () => {
       const getCutoff = service['getErrorCutoffDate'].bind(service);
-      const now = new Date();
 
       const cutoff = getCutoff(90);
 
