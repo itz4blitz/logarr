@@ -77,6 +77,7 @@ export function useServer(id: string) {
     queryKey: queryKeys.server(id),
     queryFn: () => api.getServer(id),
     enabled: !!id,
+    staleTime: 10000, // Consider data fresh for 10 seconds
   });
 }
 
@@ -84,6 +85,7 @@ export function useProviders() {
   return useQuery({
     queryKey: queryKeys.providers,
     queryFn: () => api.getProviders(),
+    staleTime: 60000, // Provider list rarely changes - cache for 1 minute
   });
 }
 
@@ -151,6 +153,8 @@ export function useLogs(params?: LogSearchParams) {
     queryKey: queryKeys.logs(params),
     queryFn: () => api.getLogs(params),
     refetchInterval: 5000,
+    staleTime: 3000, // Consider data fresh for 3 seconds (less than refetch interval)
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -159,6 +163,7 @@ export function useLog(id: string) {
     queryKey: queryKeys.log(id),
     queryFn: () => api.getLog(id),
     enabled: !!id,
+    staleTime: 30000, // Log details don't change - cache for 30 seconds
   });
 }
 
@@ -167,6 +172,7 @@ export function useLogDetails(id: string) {
     queryKey: queryKeys.logDetails(id),
     queryFn: () => api.getLogDetails(id),
     enabled: !!id,
+    staleTime: 30000, // Log details don't change - cache for 30 seconds
   });
 }
 
@@ -176,6 +182,7 @@ export function useLogStats(serverId?: string) {
     queryFn: () => api.getLogStats(serverId),
     refetchInterval: 10000,
     placeholderData: keepPreviousData,
+    staleTime: 5000, // Consider data fresh for 5 seconds
   });
 }
 
@@ -183,6 +190,7 @@ export function useLogSources(serverId?: string) {
   return useQuery({
     queryKey: queryKeys.logSources(serverId),
     queryFn: () => api.getLogSources(serverId),
+    staleTime: 30000, // Source list changes rarely - cache for 30 seconds
   });
 }
 
@@ -191,6 +199,8 @@ export function useSessions() {
   return useQuery({
     queryKey: queryKeys.sessions,
     queryFn: () => api.getSessions(),
+    staleTime: 5000, // Consider data fresh for 5 seconds
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -200,6 +210,7 @@ export function useActiveSessions() {
     queryFn: () => api.getActiveSessions(),
     placeholderData: keepPreviousData,
     refetchInterval: 5000, // Refetch every 5 seconds as backup to WebSocket
+    staleTime: 3000, // Consider data fresh for 3 seconds (less than refetch interval)
   });
 }
 
@@ -208,6 +219,7 @@ export function useSession(id: string) {
     queryKey: queryKeys.session(id),
     queryFn: () => api.getSession(id),
     enabled: !!id,
+    staleTime: 10000, // Consider data fresh for 10 seconds
   });
 }
 
@@ -216,6 +228,7 @@ export function useSessionTimeline(id: string) {
     queryKey: queryKeys.sessionTimeline(id),
     queryFn: () => api.getSessionTimeline(id),
     enabled: !!id,
+    staleTime: 10000, // Consider data fresh for 10 seconds
   });
 }
 
@@ -224,6 +237,7 @@ export function useSessionLogs(id: string) {
     queryKey: queryKeys.sessionLogs(id),
     queryFn: () => api.getSessionLogs(id),
     enabled: !!id,
+    staleTime: 10000, // Consider data fresh for 10 seconds
   });
 }
 
@@ -233,6 +247,7 @@ export function useIssues(params?: IssueSearchParams) {
     queryKey: queryKeys.issues(params),
     queryFn: () => api.getIssues(params),
     placeholderData: keepPreviousData,
+    staleTime: 10000, // Consider data fresh for 10 seconds
   });
 }
 
@@ -241,6 +256,7 @@ export function useIssue(id: string) {
     queryKey: queryKeys.issue(id),
     queryFn: () => api.getIssue(id),
     enabled: !!id,
+    staleTime: 10000, // Consider data fresh for 10 seconds
   });
 }
 
@@ -250,6 +266,7 @@ export function useIssueStats(serverId?: string) {
     queryFn: () => api.getIssueStats(serverId),
     refetchInterval: 30000,
     placeholderData: keepPreviousData,
+    staleTime: 15000, // Consider data fresh for 15 seconds
   });
 }
 
@@ -257,6 +274,7 @@ export function useIssueCategories() {
   return useQuery({
     queryKey: queryKeys.issueCategories,
     queryFn: () => api.getIssueCategories(),
+    staleTime: 60000, // Categories rarely change - cache for 1 minute
   });
 }
 
@@ -349,6 +367,8 @@ export function useIssueOccurrences(id: string, limit?: number, offset?: number)
     queryKey: ['issues', 'occurrences', id, limit, offset] as const,
     queryFn: () => api.getIssueOccurrences(id, limit, offset),
     enabled: !!id,
+    staleTime: 10000, // Consider data fresh for 10 seconds
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -357,6 +377,7 @@ export function useIssueTimeline(id: string) {
     queryKey: ['issues', 'timeline', id] as const,
     queryFn: () => api.getIssueTimeline(id),
     enabled: !!id,
+    staleTime: 30000, // Timeline is relatively static - cache for 30 seconds
   });
 }
 
@@ -378,6 +399,7 @@ export function useAvailableAiProviders() {
   return useQuery({
     queryKey: queryKeys.aiProviders,
     queryFn: () => api.getAvailableAiProviders(),
+    staleTime: 300000, // Provider list is static - cache for 5 minutes
   });
 }
 
@@ -385,6 +407,7 @@ export function useAiProviderSettings() {
   return useQuery({
     queryKey: queryKeys.aiProviderSettings,
     queryFn: () => api.getAiProviderSettings(),
+    staleTime: 30000, // Settings rarely change - cache for 30 seconds
   });
 }
 
@@ -393,6 +416,7 @@ export function useAiProviderSetting(id: string) {
     queryKey: queryKeys.aiProviderSetting(id),
     queryFn: () => api.getAiProviderSetting(id),
     enabled: !!id,
+    staleTime: 30000, // Settings rarely change - cache for 30 seconds
   });
 }
 
@@ -400,6 +424,7 @@ export function useDefaultAiProvider() {
   return useQuery({
     queryKey: queryKeys.defaultAiProvider,
     queryFn: () => api.getDefaultAiProvider(),
+    staleTime: 30000, // Settings rarely change - cache for 30 seconds
   });
 }
 
@@ -512,5 +537,6 @@ export function useAiAnalysisHistory(params?: {
     queryKey: ['settings', 'ai', 'history', params] as const,
     queryFn: () => api.getAiAnalysisHistory(params),
     placeholderData: keepPreviousData,
+    staleTime: 30000, // History rarely changes - cache for 30 seconds
   });
 }

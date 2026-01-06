@@ -125,6 +125,10 @@ export const logEntries = pgTable(
     uniqueIndex('log_entries_server_external_id_idx').on(table.serverId, table.externalActivityId),
     // Unique constraint for cross-source deduplication
     uniqueIndex('log_entries_server_dedup_key_idx').on(table.serverId, table.deduplicationKey),
+    // Composite indexes for common query patterns (added for performance)
+    index('idx_log_entries_server_timestamp').on(table.serverId, table.timestamp),
+    index('idx_log_entries_server_level').on(table.serverId, table.level),
+    index('idx_log_entries_level_timestamp').on(table.level, table.timestamp),
   ]
 );
 
@@ -210,6 +214,8 @@ export const sessions = pgTable(
     index('sessions_is_active_idx').on(table.isActive),
     // Unique constraint to prevent duplicate sessions from race conditions
     uniqueIndex('sessions_server_external_id_idx').on(table.serverId, table.externalId),
+    // Composite index for "now playing" queries (added for performance)
+    index('idx_sessions_server_active').on(table.serverId, table.isActive),
   ]
 );
 
@@ -245,6 +251,8 @@ export const playbackEvents = pgTable(
     index('playback_events_session_id_idx').on(table.sessionId),
     index('playback_events_timestamp_idx').on(table.timestamp),
     index('playback_events_event_type_idx').on(table.eventType),
+    // Composite index for session timeline queries (added for performance)
+    index('idx_playback_events_session_timestamp').on(table.sessionId, table.timestamp),
   ]
 );
 
@@ -339,6 +347,9 @@ export const issues = pgTable(
     index('issues_last_seen_idx').on(table.lastSeen),
     index('issues_impact_score_idx').on(table.impactScore),
     index('issues_occurrence_count_idx').on(table.occurrenceCount),
+    // Composite indexes for common query patterns (added for performance)
+    index('idx_issues_status_severity').on(table.status, table.severity),
+    index('idx_issues_server_status').on(table.serverId, table.status),
   ]
 );
 
@@ -368,6 +379,8 @@ export const issueOccurrences = pgTable(
     index('issue_occurrences_log_entry_id_idx').on(table.logEntryId),
     index('issue_occurrences_timestamp_idx').on(table.timestamp),
     uniqueIndex('issue_occurrences_issue_log_idx').on(table.issueId, table.logEntryId),
+    // Composite index for sorted occurrence lookup (added for performance)
+    index('idx_issue_occurrences_issue_timestamp').on(table.issueId, table.timestamp),
   ]
 );
 
