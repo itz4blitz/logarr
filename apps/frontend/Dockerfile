@@ -45,9 +45,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/apps/frontend/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/apps/frontend/.next/static ./apps/frontend/.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/apps/frontend/public ./apps/frontend/public
 
-# Copy entrypoint script
+# Copy entrypoint script and fix line endings (handles Windows CRLF issue)
 COPY --from=builder --chown=nextjs:nodejs /app/apps/frontend/docker-entrypoint.sh ./
-RUN chmod +x ./docker-entrypoint.sh
+RUN sed -i 's/\r$//' ./docker-entrypoint.sh && chmod +x ./docker-entrypoint.sh
 
 USER nextjs
 
