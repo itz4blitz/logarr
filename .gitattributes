@@ -1,0 +1,14 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Shell scripts should always use LF line endings (Unix-style)
+*.sh text eol=lf
+
+# Other files that should use LF
+Dockerfile* text eol=lf
+.dockerignore text eol=lf
+Makefile text eol=lf
+
+# Git config files
+.gitattributes text eol=lf
+.gitignore text eol=lf
