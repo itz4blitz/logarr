@@ -17,6 +17,9 @@ describe('RetentionController', () => {
     getStorageStats: ReturnType<typeof vi.fn>;
     previewCleanup: ReturnType<typeof vi.fn>;
     runCleanup: ReturnType<typeof vi.fn>;
+    deleteLogsByServerAndLevel: ReturnType<typeof vi.fn>;
+    deleteAllLogsByServer: ReturnType<typeof vi.fn>;
+    deleteAllLogs: ReturnType<typeof vi.fn>;
   };
   let mockSettingsService: {
     getRetentionSettings: ReturnType<typeof vi.fn>;
@@ -116,6 +119,9 @@ describe('RetentionController', () => {
       getStorageStats: vi.fn().mockResolvedValue(mockStorageStats),
       previewCleanup: vi.fn().mockResolvedValue(mockCleanupPreview),
       runCleanup: vi.fn().mockResolvedValue(mockCleanupResult),
+      deleteLogsByServerAndLevel: vi.fn().mockResolvedValue({ deleted: 50, durationMs: 250 }),
+      deleteAllLogsByServer: vi.fn().mockResolvedValue({ deleted: 100, durationMs: 500 }),
+      deleteAllLogs: vi.fn().mockResolvedValue({ deleted: 10000, durationMs: 2000 }),
     };
 
     mockSettingsService = {
