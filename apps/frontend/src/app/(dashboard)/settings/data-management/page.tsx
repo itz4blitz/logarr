@@ -16,6 +16,11 @@ import {
   ChevronDown,
   ChevronUp,
   BarChart3,
+  FileText,
+  XCircle,
+  AlertTriangle,
+  Info,
+  Bug,
 } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { toast } from 'sonner';
@@ -23,9 +28,19 @@ import { toast } from 'sonner';
 import type { AiProviderType } from '@/lib/api';
 
 import { ProviderIcon } from '@/components/provider-icon';
-import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,6 +53,11 @@ import {
   useStorageStats,
   useCleanupPreview,
   useRunCleanup,
+  useFileIngestionSettings,
+  useUpdateFileIngestionSettings,
+  useDeleteServerLogsByLevel,
+  useDeleteServerLogs,
+  useDeleteAllLogs,
 } from '@/hooks/use-api';
 import { cn } from '@/lib/utils';
 
@@ -55,18 +75,43 @@ export default function DataManagementPage() {
   } = useStorageStats();
   const { data: preview, isLoading: previewLoading } = useCleanupPreview();
   const { data: history, isLoading: historyLoading } = useRetentionHistory(10);
+  const {
+    data: fileIngestionSettings,
+    isLoading: fileIngestionLoading,
+    error: fileIngestionError,
+  } = useFileIngestionSettings();
 
   const updateMutation = useUpdateRetentionSettings();
   const runCleanupMutation = useRunCleanup();
+  const updateFileIngestionMutation = useUpdateFileIngestionSettings();
+  const deleteByLevelMutation = useDeleteServerLogsByLevel();
+  const deleteServerLogsMutation = useDeleteServerLogs();
+  const deleteAllLogsMutation = useDeleteAllLogs();
 
   // State for expandable server details
   const [expandedServer, setExpandedServer] = useState<string | null>(null);
+
+  // State for delete confirmation dialogs
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    type: 'level' | 'server' | 'all';
+    serverId?: string;
+    serverName?: string;
+    level?: string;
+    count?: number;
+  }>({ open: false, type: 'level' });
 
   // All hooks must be called before any early returns
   const [localSettings, setLocalSettings] = useState({
     enabled: true,
     infoRetentionDays: 30,
     errorRetentionDays: 90,
+  });
+
+  const [localFileIngestionSettings, setLocalFileIngestionSettings] = useState({
+    maxConcurrentTailers: 5,
+    maxFileAgeDays: 7,
+    tailerStartDelayMs: 500,
   });
 
   // Sync local state with server settings
@@ -80,8 +125,19 @@ export default function DataManagementPage() {
     });
   }
 
+  // Sync file ingestion local state with server settings
+  const fileIngestionSettingsRef = useRef(fileIngestionSettings);
+  if (fileIngestionSettings && fileIngestionSettings !== fileIngestionSettingsRef.current) {
+    fileIngestionSettingsRef.current = fileIngestionSettings;
+    setLocalFileIngestionSettings({
+      maxConcurrentTailers: fileIngestionSettings.maxConcurrentTailers,
+      maxFileAgeDays: fileIngestionSettings.maxFileAgeDays,
+      tailerStartDelayMs: fileIngestionSettings.tailerStartDelayMs,
+    });
+  }
+
   // Show error state (after all hooks)
-  const hasError = settingsError || statsError;
+  const hasError = settingsError || statsError || fileIngestionError;
   if (hasError) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-4">
@@ -120,6 +176,41 @@ export default function DataManagementPage() {
     }
   };
 
+  const handleSaveFileIngestionSettings = async () => {
+    try {
+      await updateFileIngestionMutation.mutateAsync(localFileIngestionSettings);
+      toast.success('File ingestion settings saved');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to save');
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      if (deleteDialog.type === 'level' && deleteDialog.serverId && deleteDialog.level) {
+        const result = await deleteByLevelMutation.mutateAsync({
+          serverId: deleteDialog.serverId,
+          levels: [deleteDialog.level],
+        });
+        toast.success(
+          `Deleted ${result.deleted.toLocaleString()} ${deleteDialog.level} logs from ${deleteDialog.serverName}`
+        );
+      } else if (deleteDialog.type === 'server' && deleteDialog.serverId) {
+        const result = await deleteServerLogsMutation.mutateAsync(deleteDialog.serverId);
+        toast.success(
+          `Deleted ${result.deleted.toLocaleString()} logs from ${deleteDialog.serverName}`
+        );
+      } else if (deleteDialog.type === 'all') {
+        const result = await deleteAllLogsMutation.mutateAsync();
+        toast.success(`Deleted ${result.deleted.toLocaleString()} logs from all servers`);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Delete failed');
+    } finally {
+      setDeleteDialog({ open: false, type: 'level' });
+    }
+  };
+
   const formatCount = (count: number) => {
     if (count < 1000) return count.toString();
     if (count < 1000000) return `${(count / 1000).toFixed(1)}K`;
@@ -133,7 +224,7 @@ export default function DataManagementPage() {
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
   };
 
-  const isLoading = settingsLoading || statsLoading;
+  const isLoading = settingsLoading || statsLoading || fileIngestionLoading;
 
   if (isLoading) {
     return (
@@ -153,6 +244,12 @@ export default function DataManagementPage() {
     (localSettings.enabled !== settings.enabled ||
       localSettings.infoRetentionDays !== settings.infoRetentionDays ||
       localSettings.errorRetentionDays !== settings.errorRetentionDays);
+
+  const hasUnsavedFileIngestionChanges =
+    fileIngestionSettings &&
+    (localFileIngestionSettings.maxConcurrentTailers !== fileIngestionSettings.maxConcurrentTailers ||
+      localFileIngestionSettings.maxFileAgeDays !== fileIngestionSettings.maxFileAgeDays ||
+      localFileIngestionSettings.tailerStartDelayMs !== fileIngestionSettings.tailerStartDelayMs);
 
   // Calculate age distribution percentages for visualization
   const totalLogs = stats?.logCount || 0;
@@ -213,18 +310,36 @@ export default function DataManagementPage() {
                 </div>
               </div>
             </div>
-            {stats?.oldestLogTimestamp && (
-              <div className="text-muted-foreground text-[10px] sm:text-right">
-                <div>
-                  Oldest: {formatDistanceToNow(new Date(stats.oldestLogTimestamp), { addSuffix: true })}
-                </div>
-                {stats.newestLogTimestamp && (
+            <div className="flex items-center gap-3">
+              {stats?.oldestLogTimestamp && (
+                <div className="text-muted-foreground text-[10px] sm:text-right">
                   <div>
-                    Newest: {formatDistanceToNow(new Date(stats.newestLogTimestamp), { addSuffix: true })}
+                    Oldest: {formatDistanceToNow(new Date(stats.oldestLogTimestamp), { addSuffix: true })}
                   </div>
-                )}
-              </div>
-            )}
+                  {stats.newestLogTimestamp && (
+                    <div>
+                      Newest: {formatDistanceToNow(new Date(stats.newestLogTimestamp), { addSuffix: true })}
+                    </div>
+                  )}
+                </div>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-[10px] text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                onClick={() =>
+                  setDeleteDialog({
+                    open: true,
+                    type: 'all',
+                    count: stats?.logCount ?? 0,
+                  })
+                }
+                disabled={(stats?.logCount ?? 0) === 0 || deleteAllLogsMutation.isPending}
+              >
+                <Trash2 className="mr-1 h-3 w-3" />
+                Delete All
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -342,77 +457,75 @@ export default function DataManagementPage() {
                     >
                       <button
                         onClick={() => setExpandedServer(isExpanded ? null : server.serverId)}
-                        className="flex w-full items-center justify-between p-2 text-left"
+                        className="flex w-full items-center gap-2 p-2 text-left"
                       >
-                        <div className="flex items-center gap-2">
-                          <ProviderIcon providerId={server.serverType as AiProviderType} size="sm" />
-                          <div>
-                            <div className="text-sm font-medium">{server.serverName}</div>
-                            <div className="text-muted-foreground text-[10px] capitalize">
-                              {server.serverType}
+                        <ProviderIcon providerId={server.serverType as AiProviderType} size="sm" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">{server.serverName}</span>
+                            <div className="flex gap-1 text-[10px]">
+                              <span className="text-rose-500">{formatCount(server.logCountsByLevel.error)}</span>
+                              <span className="text-amber-500">{formatCount(server.logCountsByLevel.warn)}</span>
+                              <span className="text-blue-500">{formatCount(server.logCountsByLevel.info)}</span>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-right">
-                            <div className="text-sm font-semibold">{formatCount(server.logCount)}</div>
-                            <div className="text-muted-foreground text-[10px]">
-                              {serverPercentage.toFixed(1)}% · {server.estimatedSizeFormatted}
-                            </div>
+                          <div className="text-muted-foreground text-[10px]">
+                            {formatCount(server.logCount)} logs · {serverPercentage.toFixed(1)}% · {server.estimatedSizeFormatted}
                           </div>
-                          <div className="flex gap-1.5 text-[10px]">
-                            <span className="text-rose-500">
-                              {formatCount(server.logCountsByLevel.error)}
-                            </span>
-                            <span className="text-amber-500">
-                              {formatCount(server.logCountsByLevel.warn)}
-                            </span>
-                            <span className="text-blue-500">
-                              {formatCount(server.logCountsByLevel.info)}
-                            </span>
-                          </div>
-                          {isExpanded ? (
-                            <ChevronUp className="h-3.5 w-3.5" />
-                          ) : (
-                            <ChevronDown className="h-3.5 w-3.5" />
-                          )}
                         </div>
+                        {isExpanded ? (
+                          <ChevronUp className="h-3.5 w-3.5 shrink-0" />
+                        ) : (
+                          <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                        )}
                       </button>
 
                       {isExpanded && (
                         <div className="border-border/50 border-t px-3 pb-3">
                           <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                            {/* Log Levels - Horizontal Bar Chart */}
+                            {/* Log Levels with Delete Buttons */}
                             <div>
                               <div className="text-muted-foreground mb-2 flex items-center gap-1.5 text-[10px] font-medium uppercase">
                                 <BarChart3 className="h-3 w-3" />
                                 Log Levels
                               </div>
-                              <div className="space-y-1.5">
+                              <div className="space-y-1">
                                 {[
                                   {
                                     label: 'Error',
+                                    key: 'error',
                                     value: server.logCountsByLevel.error,
                                     color: 'bg-rose-500',
                                     textColor: 'text-rose-500',
+                                    icon: XCircle,
+                                    iconColor: 'text-rose-500',
                                   },
                                   {
                                     label: 'Warn',
+                                    key: 'warn',
                                     value: server.logCountsByLevel.warn,
                                     color: 'bg-amber-500',
                                     textColor: 'text-amber-500',
+                                    icon: AlertTriangle,
+                                    iconColor: 'text-amber-500',
                                   },
                                   {
                                     label: 'Info',
+                                    key: 'info',
                                     value: server.logCountsByLevel.info,
                                     color: 'bg-blue-500',
                                     textColor: 'text-blue-500',
+                                    icon: Info,
+                                    iconColor: 'text-blue-500',
                                   },
                                   {
                                     label: 'Debug',
+                                    key: 'debug',
                                     value: server.logCountsByLevel.debug,
                                     color: 'bg-slate-500',
                                     textColor: 'text-muted-foreground',
+                                    icon: Bug,
+                                    iconColor: 'text-slate-500',
                                   },
                                 ].map((level) => {
                                   const maxLevel = Math.max(
@@ -423,12 +536,11 @@ export default function DataManagementPage() {
                                     1
                                   );
                                   const width = (level.value / maxLevel) * 100;
+                                  const LevelIcon = level.icon;
                                   return (
-                                    <div key={level.label} className="flex items-center gap-2">
-                                      <span className="text-muted-foreground w-8 text-[9px]">
-                                        {level.label}
-                                      </span>
-                                      <div className="bg-muted/30 relative h-3 flex-1 overflow-hidden rounded">
+                                    <div key={level.label} className="group flex items-center gap-1.5">
+                                      <LevelIcon className={cn('h-3 w-3 shrink-0', level.iconColor)} />
+                                      <div className="bg-muted/30 relative h-2.5 flex-1 overflow-hidden rounded">
                                         <div
                                           className={cn(
                                             'absolute inset-y-0 left-0 rounded transition-all',
@@ -437,13 +549,58 @@ export default function DataManagementPage() {
                                           style={{ width: `${Math.max(width, level.value > 0 ? 2 : 0)}%` }}
                                         />
                                       </div>
-                                      <span className={cn('w-10 text-right text-[9px] font-medium', level.textColor)}>
+                                      <span className={cn('w-8 text-right text-[9px] font-medium', level.textColor)}>
                                         {formatCount(level.value)}
                                       </span>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (level.value > 0) {
+                                            setDeleteDialog({
+                                              open: true,
+                                              type: 'level',
+                                              serverId: server.serverId,
+                                              serverName: server.serverName,
+                                              level: level.key,
+                                              count: level.value,
+                                            });
+                                          }
+                                        }}
+                                        disabled={level.value === 0 || deleteByLevelMutation.isPending}
+                                        className={cn(
+                                          'rounded p-0.5 opacity-0 transition-opacity group-hover:opacity-100',
+                                          level.value > 0
+                                            ? 'hover:bg-destructive/20 text-muted-foreground hover:text-destructive'
+                                            : 'cursor-not-allowed text-muted-foreground/30'
+                                        )}
+                                        title={level.value > 0 ? `Delete ${level.label} logs` : 'No logs to delete'}
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </button>
                                     </div>
                                   );
                                 })}
                               </div>
+                              {/* Delete All Server Logs Button */}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="mt-2 h-6 w-full text-[9px] text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteDialog({
+                                    open: true,
+                                    type: 'server',
+                                    serverId: server.serverId,
+                                    serverName: server.serverName,
+                                    count: server.logCount,
+                                  });
+                                }}
+                                disabled={server.logCount === 0 || deleteServerLogsMutation.isPending}
+                              >
+                                <Trash2 className="mr-1 h-3 w-3" />
+                                Delete All ({formatCount(server.logCount)})
+                              </Button>
                             </div>
 
                             {/* Age Distribution - Horizontal Bar Chart (simpler, more readable) */}
@@ -539,175 +696,336 @@ export default function DataManagementPage() {
           </CardContent>
         </Card>
 
-        {/* Right Column: Retention Settings + Cleanup */}
+        {/* Right Column: Settings */}
         <div className="flex flex-col gap-4 lg:min-h-0">
-          {/* Retention Policy */}
+          {/* Combined Settings Card */}
           <Card className="border-border/50 lg:flex-1">
-            <CardContent className="flex flex-col p-3 lg:h-full">
-              <div className="mb-2 flex shrink-0 items-center justify-between">
-                <h3 className="flex items-center gap-2 text-xs font-medium">
-                  <HardDrive className="h-3.5 w-3.5" />
-                  Retention Policy
-                </h3>
-                <div className="flex items-center gap-2">
-                  {hasUnsavedChanges && (
+            <CardContent className="flex flex-col gap-4 p-3 lg:h-full">
+              {/* Retention Policy Section */}
+              <div className="flex-1">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="flex items-center gap-2 text-xs font-medium">
+                    <HardDrive className="h-3.5 w-3.5" />
+                    Retention Policy
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    {hasUnsavedChanges && (
+                      <Button
+                        size="sm"
+                        className="h-5 px-2 text-[10px]"
+                        onClick={handleSaveSettings}
+                        disabled={updateMutation.isPending}
+                      >
+                        {updateMutation.isPending ? (
+                          <Loader2 className="mr-1 h-2.5 w-2.5 animate-spin" />
+                        ) : (
+                          <Check className="mr-1 h-2.5 w-2.5" />
+                        )}
+                        Save
+                      </Button>
+                    )}
+                    <Switch
+                      checked={localSettings.enabled}
+                      onCheckedChange={(checked) =>
+                        setLocalSettings((prev) => ({ ...prev, enabled: checked }))
+                      }
+                    />
+                  </div>
+                </div>
+                <div className={cn('space-y-2', !localSettings.enabled && 'pointer-events-none opacity-50')}>
+                  <div className="flex items-center gap-3">
+                    <Label className="w-24 shrink-0 text-[10px]">Info/Debug</Label>
+                    <Slider
+                      value={[localSettings.infoRetentionDays]}
+                      onValueChange={([value]) =>
+                        setLocalSettings((prev) => ({ ...prev, infoRetentionDays: value }))
+                      }
+                      min={7}
+                      max={365}
+                      step={1}
+                      disabled={!localSettings.enabled}
+                      className="flex-1"
+                    />
+                    <Input
+                      type="number"
+                      min={7}
+                      max={365}
+                      value={localSettings.infoRetentionDays}
+                      onChange={(e) => {
+                        const value = Math.max(7, Math.min(365, parseInt(e.target.value) || 7));
+                        setLocalSettings((prev) => ({ ...prev, infoRetentionDays: value }));
+                      }}
+                      disabled={!localSettings.enabled}
+                      className="h-5 w-14 text-center text-[10px]"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Label className="w-24 shrink-0 text-[10px]">Error/Warn</Label>
+                    <Slider
+                      value={[localSettings.errorRetentionDays]}
+                      onValueChange={([value]) =>
+                        setLocalSettings((prev) => ({ ...prev, errorRetentionDays: value }))
+                      }
+                      min={14}
+                      max={365}
+                      step={1}
+                      disabled={!localSettings.enabled}
+                      className="flex-1"
+                    />
+                    <Input
+                      type="number"
+                      min={14}
+                      max={365}
+                      value={localSettings.errorRetentionDays}
+                      onChange={(e) => {
+                        const value = Math.max(14, Math.min(365, parseInt(e.target.value) || 14));
+                        setLocalSettings((prev) => ({ ...prev, errorRetentionDays: value }));
+                      }}
+                      disabled={!localSettings.enabled}
+                      className="h-5 w-14 text-center text-[10px]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-border/50 border-t" />
+
+              {/* File Ingestion Section */}
+              <div className="flex-1">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="flex items-center gap-2 text-xs font-medium">
+                    <FileText className="h-3.5 w-3.5" />
+                    File Ingestion
+                  </h3>
+                  {hasUnsavedFileIngestionChanges && (
                     <Button
                       size="sm"
-                      className="h-6 px-2 text-xs"
-                      onClick={handleSaveSettings}
-                      disabled={updateMutation.isPending}
+                      className="h-5 px-2 text-[10px]"
+                      onClick={handleSaveFileIngestionSettings}
+                      disabled={updateFileIngestionMutation.isPending}
                     >
-                      {updateMutation.isPending ? (
-                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      {updateFileIngestionMutation.isPending ? (
+                        <Loader2 className="mr-1 h-2.5 w-2.5 animate-spin" />
                       ) : (
-                        <Check className="mr-1 h-3 w-3" />
+                        <Check className="mr-1 h-2.5 w-2.5" />
                       )}
                       Save
                     </Button>
                   )}
-                  <Switch
-                    checked={localSettings.enabled}
-                    onCheckedChange={(checked) =>
-                      setLocalSettings((prev) => ({ ...prev, enabled: checked }))
-                    }
-                  />
                 </div>
-              </div>
-
-              <div
-                className={cn('flex-1 space-y-4', !localSettings.enabled && 'pointer-events-none opacity-50')}
-              >
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs">Info/Debug Logs</Label>
-                    <Badge variant="outline" className="text-[10px]">
-                      {localSettings.infoRetentionDays} days
-                    </Badge>
+                  <div className="flex items-center gap-3">
+                    <Label className="w-24 shrink-0 text-[10px]">Concurrent</Label>
+                    <Slider
+                      value={[localFileIngestionSettings.maxConcurrentTailers]}
+                      onValueChange={([value]) =>
+                        setLocalFileIngestionSettings((prev) => ({ ...prev, maxConcurrentTailers: value }))
+                      }
+                      min={1}
+                      max={20}
+                      step={1}
+                      className="flex-1"
+                    />
+                    <Input
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={localFileIngestionSettings.maxConcurrentTailers}
+                      onChange={(e) => {
+                        const value = Math.max(1, Math.min(20, parseInt(e.target.value) || 1));
+                        setLocalFileIngestionSettings((prev) => ({ ...prev, maxConcurrentTailers: value }));
+                      }}
+                      className="h-5 w-14 text-center text-[10px]"
+                    />
                   </div>
-                  <Slider
-                    value={[localSettings.infoRetentionDays]}
-                    onValueChange={([value]) =>
-                      setLocalSettings((prev) => ({ ...prev, infoRetentionDays: value }))
-                    }
-                    min={7}
-                    max={365}
-                    step={1}
-                    disabled={!localSettings.enabled}
-                  />
-                  <p className="text-muted-foreground text-[10px]">
-                    Regular logs older than this are automatically deleted
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs">Error/Warning Logs</Label>
-                    <Badge variant="outline" className="text-[10px]">
-                      {localSettings.errorRetentionDays} days
-                    </Badge>
+                  <div className="flex items-center gap-3">
+                    <Label className="w-24 shrink-0 text-[10px]">Max Age</Label>
+                    <Slider
+                      value={[localFileIngestionSettings.maxFileAgeDays]}
+                      onValueChange={([value]) =>
+                        setLocalFileIngestionSettings((prev) => ({ ...prev, maxFileAgeDays: value }))
+                      }
+                      min={1}
+                      max={365}
+                      step={1}
+                      className="flex-1"
+                    />
+                    <Input
+                      type="number"
+                      min={1}
+                      max={365}
+                      value={localFileIngestionSettings.maxFileAgeDays}
+                      onChange={(e) => {
+                        const value = Math.max(1, Math.min(365, parseInt(e.target.value) || 1));
+                        setLocalFileIngestionSettings((prev) => ({ ...prev, maxFileAgeDays: value }));
+                      }}
+                      className="h-5 w-14 text-center text-[10px]"
+                    />
                   </div>
-                  <Slider
-                    value={[localSettings.errorRetentionDays]}
-                    onValueChange={([value]) =>
-                      setLocalSettings((prev) => ({ ...prev, errorRetentionDays: value }))
-                    }
-                    min={14}
-                    max={365}
-                    step={1}
-                    disabled={!localSettings.enabled}
-                  />
-                  <p className="text-muted-foreground text-[10px]">Errors are kept longer for debugging</p>
+                  <div className="flex items-center gap-3">
+                    <Label className="w-24 shrink-0 text-[10px]">Start Delay</Label>
+                    <Slider
+                      value={[localFileIngestionSettings.tailerStartDelayMs]}
+                      onValueChange={([value]) =>
+                        setLocalFileIngestionSettings((prev) => ({ ...prev, tailerStartDelayMs: value }))
+                      }
+                      min={0}
+                      max={5000}
+                      step={100}
+                      className="flex-1"
+                    />
+                    <Input
+                      type="number"
+                      min={0}
+                      max={5000}
+                      step={100}
+                      value={localFileIngestionSettings.tailerStartDelayMs}
+                      onChange={(e) => {
+                        const value = Math.max(0, Math.min(5000, parseInt(e.target.value) || 0));
+                        setLocalFileIngestionSettings((prev) => ({ ...prev, tailerStartDelayMs: value }));
+                      }}
+                      className="h-5 w-[4.5rem] text-center text-[10px]"
+                    />
+                  </div>
                 </div>
-              </div>
-
-              <div className="text-muted-foreground mt-2 shrink-0 border-t pt-2 text-[10px]">
-                Cleanup runs automatically at 3 AM daily when enabled
               </div>
             </CardContent>
           </Card>
 
-          {/* Manual Cleanup */}
-          <Card className="border-border/50 shrink-0">
-            <CardContent className="p-3">
-              <h3 className="mb-2 flex items-center gap-2 text-xs font-medium">
-                <Trash2 className="h-3.5 w-3.5" />
-                Manual Cleanup
-              </h3>
-              {previewLoading ? (
-                <Skeleton className="h-12" />
-              ) : preview && preview.totalLogsToDelete > 0 ? (
-                <div className="space-y-2">
-                  <div className="bg-muted/30 rounded-lg p-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span>Logs eligible:</span>
-                      <span className="font-semibold">{formatCount(preview.totalLogsToDelete)}</span>
+          {/* Cleanup Row - Manual + History side by side */}
+          <div className="grid shrink-0 grid-cols-2 gap-4">
+            {/* Manual Cleanup */}
+            <Card className="border-border/50">
+              <CardContent className="p-3">
+                <h3 className="mb-2 flex items-center gap-2 text-xs font-medium">
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Manual Cleanup
+                </h3>
+                {previewLoading ? (
+                  <Skeleton className="h-10" />
+                ) : preview && preview.totalLogsToDelete > 0 ? (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-muted-foreground">Eligible:</span>
+                      <span className="font-medium">{formatCount(preview.totalLogsToDelete)} (~{preview.estimatedSpaceSavingsFormatted})</span>
                     </div>
-                    <div className="text-muted-foreground mt-0.5 text-[10px]">
-                      ~{preview.estimatedSpaceSavingsFormatted} savings
-                    </div>
+                    <Button
+                      size="sm"
+                      onClick={handleRunCleanup}
+                      disabled={runCleanupMutation.isPending}
+                      variant="destructive"
+                      className="h-6 w-full text-[10px]"
+                    >
+                      {runCleanupMutation.isPending ? (
+                        <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                      ) : (
+                        <PlayCircle className="mr-1 h-3 w-3" />
+                      )}
+                      Run Now
+                    </Button>
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={handleRunCleanup}
-                    disabled={runCleanupMutation.isPending}
-                    variant="destructive"
-                    className="h-7 w-full text-xs"
-                  >
-                    {runCleanupMutation.isPending ? (
-                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                    ) : (
-                      <PlayCircle className="mr-1 h-3 w-3" />
-                    )}
-                    Run Now
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-muted-foreground flex items-center gap-2 text-xs">
-                  <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
-                  Nothing to clean up
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                ) : (
+                  <div className="text-muted-foreground flex items-center gap-2 text-[10px]">
+                    <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
+                    Nothing to clean up
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-          {/* Cleanup History */}
-          <Card className="border-border/50 shrink-0">
-            <CardContent className="p-3">
-              <h3 className="mb-2 flex items-center gap-2 text-xs font-medium">
-                <Clock className="h-3.5 w-3.5" />
-                Recent Runs
-              </h3>
-              {historyLoading ? (
-                <Skeleton className="h-16" />
-              ) : !history || history.length === 0 ? (
-                <div className="text-muted-foreground text-xs">No cleanup runs yet</div>
-              ) : (
-                <div className="space-y-1">
-                  {history.slice(0, 4).map((item) => (
-                    <div key={item.id} className="flex items-center justify-between text-[10px]">
-                      <div className="flex items-center gap-1.5">
-                        {item.status === 'completed' ? (
-                          <CheckCircle className="h-3 w-3 text-emerald-500" />
-                        ) : item.status === 'running' ? (
-                          <Loader2 className="h-3 w-3 animate-spin text-blue-500" />
-                        ) : (
-                          <AlertCircle className="h-3 w-3 text-red-500" />
-                        )}
+            {/* Cleanup History */}
+            <Card className="border-border/50">
+              <CardContent className="p-3">
+                <h3 className="mb-2 flex items-center gap-2 text-xs font-medium">
+                  <Clock className="h-3.5 w-3.5" />
+                  Recent Runs
+                </h3>
+                {historyLoading ? (
+                  <Skeleton className="h-10" />
+                ) : !history || history.length === 0 ? (
+                  <div className="text-muted-foreground text-[10px]">No cleanup runs yet</div>
+                ) : (
+                  <div className="space-y-0.5">
+                    {history.slice(0, 3).map((item) => (
+                      <div key={item.id} className="flex items-center justify-between text-[10px]">
+                        <div className="flex items-center gap-1">
+                          {item.status === 'completed' ? (
+                            <CheckCircle className="h-2.5 w-2.5 text-emerald-500" />
+                          ) : item.status === 'running' ? (
+                            <Loader2 className="h-2.5 w-2.5 animate-spin text-blue-500" />
+                          ) : (
+                            <AlertCircle className="h-2.5 w-2.5 text-red-500" />
+                          )}
+                          <span className="text-muted-foreground">
+                            {formatDistanceToNow(new Date(item.startedAt), { addSuffix: true })}
+                          </span>
+                        </div>
                         <span className="text-muted-foreground">
-                          {formatDistanceToNow(new Date(item.startedAt), { addSuffix: true })}
+                          {item.status === 'completed' ? `${formatCount(item.totalDeleted)}` : item.status}
                         </span>
                       </div>
-                      <span className="text-muted-foreground">
-                        {item.status === 'completed' ? `${formatCount(item.totalDeleted)} deleted` : item.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog((prev) => ({ ...prev, open }))}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              {deleteDialog.type === 'all'
+                ? 'Delete All Logs'
+                : deleteDialog.type === 'server'
+                  ? `Delete All Logs from ${deleteDialog.serverName}`
+                  : `Delete ${deleteDialog.level?.charAt(0).toUpperCase()}${deleteDialog.level?.slice(1)} Logs`}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                {deleteDialog.type === 'all' ? (
+                  <>
+                    This will permanently delete <strong>all logs</strong> from all servers.
+                  </>
+                ) : deleteDialog.type === 'server' ? (
+                  <>
+                    This will permanently delete <strong>{formatCount(deleteDialog.count ?? 0)} logs</strong> from{' '}
+                    <strong>{deleteDialog.serverName}</strong>.
+                  </>
+                ) : (
+                  <>
+                    This will permanently delete <strong>{formatCount(deleteDialog.count ?? 0)} {deleteDialog.level}</strong>{' '}
+                    logs from <strong>{deleteDialog.serverName}</strong>.
+                  </>
+                )}
+              </p>
+              <p className="text-destructive font-medium">This action cannot be undone.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={
+                deleteByLevelMutation.isPending ||
+                deleteServerLogsMutation.isPending ||
+                deleteAllLogsMutation.isPending
+              }
+            >
+              {(deleteByLevelMutation.isPending ||
+                deleteServerLogsMutation.isPending ||
+                deleteAllLogsMutation.isPending) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

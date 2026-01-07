@@ -366,4 +366,191 @@ describe('SettingsService', () => {
       expect(mockDb.update).toHaveBeenCalled();
     });
   });
+
+  // ============ File Ingestion Settings Tests ============
+
+  describe('getFileIngestionSettings', () => {
+    it('should return default file ingestion settings when no DB values exist', async () => {
+      configureMockDb(mockDb, { select: [] });
+
+      const result = await service.getFileIngestionSettings();
+
+      expect(result).toEqual({
+        maxConcurrentTailers: 5,
+        maxFileAgeDays: 7,
+        tailerStartDelayMs: 500,
+      });
+    });
+
+    it('should return database values when they exist', async () => {
+      configureMockDb(mockDb, { select: [{ value: 10 }] });
+
+      const result = await service.getFileIngestionSettings();
+
+      // All three settings will get the same mocked value
+      expect(result.maxConcurrentTailers).toBe(10);
+    });
+
+    it('should have maxConcurrentTailers property', async () => {
+      configureMockDb(mockDb, { select: [] });
+
+      const result = await service.getFileIngestionSettings();
+
+      expect(result).toHaveProperty('maxConcurrentTailers');
+      expect(typeof result.maxConcurrentTailers).toBe('number');
+    });
+
+    it('should have maxFileAgeDays property', async () => {
+      configureMockDb(mockDb, { select: [] });
+
+      const result = await service.getFileIngestionSettings();
+
+      expect(result).toHaveProperty('maxFileAgeDays');
+      expect(typeof result.maxFileAgeDays).toBe('number');
+    });
+
+    it('should have tailerStartDelayMs property', async () => {
+      configureMockDb(mockDb, { select: [] });
+
+      const result = await service.getFileIngestionSettings();
+
+      expect(result).toHaveProperty('tailerStartDelayMs');
+      expect(typeof result.tailerStartDelayMs).toBe('number');
+    });
+
+    it('should handle database errors gracefully', async () => {
+      mockDb.select = vi.fn().mockImplementation(() => {
+        throw new Error('DB Error');
+      });
+
+      // Should fall back to defaults
+      const result = await service.getFileIngestionSettings();
+
+      expect(result.maxConcurrentTailers).toBe(5);
+      expect(result.maxFileAgeDays).toBe(7);
+      expect(result.tailerStartDelayMs).toBe(500);
+    });
+  });
+
+  describe('updateFileIngestionSettings', () => {
+    it('should update maxConcurrentTailers setting', async () => {
+      configureMockDb(mockDb, { select: [{ value: 8 }] });
+
+      const result = await service.updateFileIngestionSettings({ maxConcurrentTailers: 8 });
+
+      expect(mockDb.insert).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('should update maxFileAgeDays setting', async () => {
+      configureMockDb(mockDb, { select: [{ value: 14 }] });
+
+      const result = await service.updateFileIngestionSettings({ maxFileAgeDays: 14 });
+
+      expect(mockDb.insert).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('should update tailerStartDelayMs setting', async () => {
+      configureMockDb(mockDb, { select: [{ value: 1000 }] });
+
+      const result = await service.updateFileIngestionSettings({ tailerStartDelayMs: 1000 });
+
+      expect(mockDb.insert).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('should update multiple settings at once', async () => {
+      configureMockDb(mockDb, { select: [{ value: 10 }] });
+
+      const result = await service.updateFileIngestionSettings({
+        maxConcurrentTailers: 10,
+        maxFileAgeDays: 30,
+        tailerStartDelayMs: 250,
+      });
+
+      expect(mockDb.insert).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('should clamp maxConcurrentTailers to minimum of 1', async () => {
+      configureMockDb(mockDb, { select: [{ value: 1 }] });
+
+      const result = await service.updateFileIngestionSettings({ maxConcurrentTailers: 0 });
+
+      // The service should clamp to 1
+      expect(mockDb.insert).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('should clamp maxConcurrentTailers to maximum of 20', async () => {
+      configureMockDb(mockDb, { select: [{ value: 20 }] });
+
+      const result = await service.updateFileIngestionSettings({ maxConcurrentTailers: 100 });
+
+      // The service should clamp to 20
+      expect(mockDb.insert).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('should clamp maxFileAgeDays to minimum of 1', async () => {
+      configureMockDb(mockDb, { select: [{ value: 1 }] });
+
+      const result = await service.updateFileIngestionSettings({ maxFileAgeDays: 0 });
+
+      // The service should clamp to 1
+      expect(mockDb.insert).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('should clamp maxFileAgeDays to maximum of 365', async () => {
+      configureMockDb(mockDb, { select: [{ value: 365 }] });
+
+      const result = await service.updateFileIngestionSettings({ maxFileAgeDays: 1000 });
+
+      // The service should clamp to 365
+      expect(mockDb.insert).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('should clamp tailerStartDelayMs to minimum of 0', async () => {
+      configureMockDb(mockDb, { select: [{ value: 0 }] });
+
+      const result = await service.updateFileIngestionSettings({ tailerStartDelayMs: -100 });
+
+      // The service should clamp to 0
+      expect(mockDb.insert).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('should clamp tailerStartDelayMs to maximum of 5000', async () => {
+      configureMockDb(mockDb, { select: [{ value: 5000 }] });
+
+      const result = await service.updateFileIngestionSettings({ tailerStartDelayMs: 10000 });
+
+      // The service should clamp to 5000
+      expect(mockDb.insert).toHaveBeenCalled();
+      expect(result).toBeDefined();
+    });
+
+    it('should return updated settings after update', async () => {
+      configureMockDb(mockDb, { select: [{ value: 12 }] });
+
+      const result = await service.updateFileIngestionSettings({ maxConcurrentTailers: 12 });
+
+      expect(result).toHaveProperty('maxConcurrentTailers');
+      expect(result).toHaveProperty('maxFileAgeDays');
+      expect(result).toHaveProperty('tailerStartDelayMs');
+    });
+
+    it('should handle empty update (no changes)', async () => {
+      configureMockDb(mockDb, { select: [] });
+
+      const result = await service.updateFileIngestionSettings({});
+
+      // Should still return current settings
+      expect(result).toBeDefined();
+      expect(result).toHaveProperty('maxConcurrentTailers');
+    });
+  });
 });

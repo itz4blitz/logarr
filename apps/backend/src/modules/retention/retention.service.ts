@@ -1,5 +1,5 @@
 import { Injectable, Inject, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { sql, count, eq, and, lt } from 'drizzle-orm';
+import { sql, count, eq, and, lt, inArray } from 'drizzle-orm';
 
 
 import { DATABASE_CONNECTION } from '../../database';
@@ -612,5 +612,79 @@ export class RetentionService implements OnModuleInit, OnModuleDestroy {
    */
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  // ============ Targeted Deletion Methods ============
+
+  /**
+   * Delete all logs for a specific server by level(s)
+   */
+  async deleteLogsByServerAndLevel(
+    serverId: string,
+    levels: string[]
+  ): Promise<{ deleted: number; durationMs: number }> {
+    const startTime = Date.now();
+    this.logger.log(`Deleting logs for server ${serverId}, levels: ${levels.join(', ')}`);
+
+    const deleted = await this.db
+      .delete(schema.logEntries)
+      .where(
+        and(
+          eq(schema.logEntries.serverId, serverId),
+          inArray(schema.logEntries.level, levels)
+        )
+      )
+      .returning({ id: schema.logEntries.id });
+
+    const durationMs = Date.now() - startTime;
+    this.logger.log(`Deleted ${deleted.length} logs in ${durationMs}ms`);
+
+    // Clean up orphaned occurrences
+    await this.cleanupOrphanedOccurrences();
+
+    return { deleted: deleted.length, durationMs };
+  }
+
+  /**
+   * Delete all logs for a specific server
+   */
+  async deleteAllLogsByServer(
+    serverId: string
+  ): Promise<{ deleted: number; durationMs: number }> {
+    const startTime = Date.now();
+    this.logger.log(`Deleting all logs for server ${serverId}`);
+
+    const deleted = await this.db
+      .delete(schema.logEntries)
+      .where(eq(schema.logEntries.serverId, serverId))
+      .returning({ id: schema.logEntries.id });
+
+    const durationMs = Date.now() - startTime;
+    this.logger.log(`Deleted ${deleted.length} logs in ${durationMs}ms`);
+
+    // Clean up orphaned occurrences
+    await this.cleanupOrphanedOccurrences();
+
+    return { deleted: deleted.length, durationMs };
+  }
+
+  /**
+   * Delete all logs globally (dangerous!)
+   */
+  async deleteAllLogs(): Promise<{ deleted: number; durationMs: number }> {
+    const startTime = Date.now();
+    this.logger.warn('Deleting ALL logs from database');
+
+    const deleted = await this.db
+      .delete(schema.logEntries)
+      .returning({ id: schema.logEntries.id });
+
+    const durationMs = Date.now() - startTime;
+    this.logger.log(`Deleted ${deleted.length} logs in ${durationMs}ms`);
+
+    // Clean up all orphaned occurrences
+    await this.cleanupOrphanedOccurrences();
+
+    return { deleted: deleted.length, durationMs };
   }
 }

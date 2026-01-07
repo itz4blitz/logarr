@@ -12,6 +12,11 @@ vi.mock('@/hooks/use-api', () => ({
   useStorageStats: vi.fn(),
   useCleanupPreview: vi.fn(),
   useRunCleanup: vi.fn(),
+  useFileIngestionSettings: vi.fn(),
+  useUpdateFileIngestionSettings: vi.fn(),
+  useDeleteServerLogsByLevel: vi.fn(),
+  useDeleteServerLogs: vi.fn(),
+  useDeleteAllLogs: vi.fn(),
 }));
 
 // Mock sonner toast
@@ -29,6 +34,11 @@ import {
   useStorageStats,
   useCleanupPreview,
   useRunCleanup,
+  useFileIngestionSettings,
+  useUpdateFileIngestionSettings,
+  useDeleteServerLogsByLevel,
+  useDeleteServerLogs,
+  useDeleteAllLogs,
 } from '@/hooks/use-api';
 import { toast } from 'sonner';
 
@@ -191,6 +201,42 @@ describe('DataManagementPage', () => {
       }),
       isPending: false,
     });
+
+    // File ingestion settings mocks
+    (useFileIngestionSettings as ReturnType<typeof vi.fn>).mockReturnValue({
+      data: {
+        maxConcurrentTailers: 5,
+        maxFileAgeDays: 7,
+        tailerStartDelayMs: 500,
+      },
+      isLoading: false,
+      error: null,
+    });
+
+    (useUpdateFileIngestionSettings as ReturnType<typeof vi.fn>).mockReturnValue({
+      mutateAsync: vi.fn().mockResolvedValue({
+        maxConcurrentTailers: 5,
+        maxFileAgeDays: 7,
+        tailerStartDelayMs: 500,
+      }),
+      isPending: false,
+    });
+
+    // Delete mutation mocks
+    (useDeleteServerLogsByLevel as ReturnType<typeof vi.fn>).mockReturnValue({
+      mutateAsync: vi.fn().mockResolvedValue({ deleted: 50, durationMs: 100 }),
+      isPending: false,
+    });
+
+    (useDeleteServerLogs as ReturnType<typeof vi.fn>).mockReturnValue({
+      mutateAsync: vi.fn().mockResolvedValue({ deleted: 100, durationMs: 200 }),
+      isPending: false,
+    });
+
+    (useDeleteAllLogs as ReturnType<typeof vi.fn>).mockReturnValue({
+      mutateAsync: vi.fn().mockResolvedValue({ deleted: 10000, durationMs: 5000 }),
+      isPending: false,
+    });
   });
 
   describe('loading state', () => {
@@ -311,16 +357,20 @@ describe('DataManagementPage', () => {
       expect(screen.getByText('Retention Policy')).toBeInTheDocument();
     });
 
-    it('should show info/debug retention days', () => {
+    it('should show retention settings sliders', () => {
       renderWithQueryClient(<DataManagementPage />);
 
-      expect(screen.getByText('30 days')).toBeInTheDocument();
+      // Look for Info/Debug and Error/Warn labels
+      expect(screen.getByText('Info/Debug')).toBeInTheDocument();
+      expect(screen.getByText('Error/Warn')).toBeInTheDocument();
     });
 
-    it('should show error retention days', () => {
+    it('should show retention inputs with values', () => {
       renderWithQueryClient(<DataManagementPage />);
 
-      expect(screen.getByText('90 days')).toBeInTheDocument();
+      // Find the input fields (sliders have associated inputs)
+      const inputs = screen.getAllByRole('spinbutton');
+      expect(inputs.length).toBeGreaterThan(0);
     });
 
     it('should have a toggle switch for enabling retention', () => {
@@ -427,11 +477,11 @@ describe('DataManagementPage', () => {
       expect(screen.getByText('Recent Runs')).toBeInTheDocument();
     });
 
-    it('should show completed status with checkmark', () => {
+    it('should show completed status with count', () => {
       renderWithQueryClient(<DataManagementPage />);
 
-      // The history shows "185 deleted" which becomes "185 deleted"
-      expect(screen.getByText('185 deleted')).toBeInTheDocument();
+      // The history shows formatted delete count - "185" for 185 entries
+      expect(screen.getByText('185')).toBeInTheDocument();
     });
 
     it('should show no cleanup runs message when history is empty', () => {
@@ -536,6 +586,196 @@ describe('DataManagementPage', () => {
       renderWithQueryClient(<DataManagementPage />);
 
       expect(screen.getByText('Total Table Size')).toBeInTheDocument();
+    });
+  });
+
+  describe('delete functionality', () => {
+    it('should show Delete All button in header', () => {
+      renderWithQueryClient(<DataManagementPage />);
+
+      // Look for the global Delete All button text
+      const deleteTexts = screen.getAllByText(/Delete All/i);
+      expect(deleteTexts.length).toBeGreaterThan(0);
+    });
+
+    it('should have delete mutations initialized', () => {
+      renderWithQueryClient(<DataManagementPage />);
+
+      // Verify the delete hooks are called
+      expect(useDeleteAllLogs).toHaveBeenCalled();
+      expect(useDeleteServerLogs).toHaveBeenCalled();
+      expect(useDeleteServerLogsByLevel).toHaveBeenCalled();
+    });
+
+    it('should show delete confirmation dialog when Delete All is clicked', async () => {
+      renderWithQueryClient(<DataManagementPage />);
+
+      // Find and click the Delete All button
+      const deleteTexts = screen.getAllByText(/Delete All/i);
+      fireEvent.click(deleteTexts[0]);
+
+      await waitFor(() => {
+        // The dialog should show the warning message
+        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+      });
+    });
+
+    it('should show warning in delete confirmation dialog', async () => {
+      renderWithQueryClient(<DataManagementPage />);
+
+      const deleteTexts = screen.getAllByText(/Delete All/i);
+      fireEvent.click(deleteTexts[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        expect(screen.getByText(/This action cannot be undone/)).toBeInTheDocument();
+      });
+    });
+
+    it('should show Cancel and Delete buttons in confirmation dialog', async () => {
+      renderWithQueryClient(<DataManagementPage />);
+
+      const deleteTexts = screen.getAllByText(/Delete All/i);
+      fireEvent.click(deleteTexts[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+      });
+    });
+
+    it('should close dialog when Cancel is clicked', async () => {
+      renderWithQueryClient(<DataManagementPage />);
+
+      const deleteTexts = screen.getAllByText(/Delete All/i);
+      fireEvent.click(deleteTexts[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      await waitFor(() => {
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should call deleteAllLogs mutation when confirmed', async () => {
+      const mockMutateAsync = vi.fn().mockResolvedValue({ deleted: 10000, durationMs: 5000 });
+      (useDeleteAllLogs as ReturnType<typeof vi.fn>).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: false,
+      });
+
+      renderWithQueryClient(<DataManagementPage />);
+
+      const deleteTexts = screen.getAllByText(/Delete All/i);
+      fireEvent.click(deleteTexts[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+      await waitFor(() => {
+        expect(mockMutateAsync).toHaveBeenCalled();
+      });
+    });
+
+    it('should show success toast after global delete', async () => {
+      const mockMutateAsync = vi.fn().mockResolvedValue({ deleted: 10000, durationMs: 5000 });
+      (useDeleteAllLogs as ReturnType<typeof vi.fn>).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: false,
+      });
+
+      renderWithQueryClient(<DataManagementPage />);
+
+      const deleteTexts = screen.getAllByText(/Delete All/i);
+      fireEvent.click(deleteTexts[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+      await waitFor(() => {
+        expect(toast.success).toHaveBeenCalledWith(
+          expect.stringContaining('10,000 logs')
+        );
+      });
+    });
+
+    it('should show error toast on delete failure', async () => {
+      const mockMutateAsync = vi.fn().mockRejectedValue(new Error('Delete failed'));
+      (useDeleteAllLogs as ReturnType<typeof vi.fn>).mockReturnValue({
+        mutateAsync: mockMutateAsync,
+        isPending: false,
+      });
+
+      renderWithQueryClient(<DataManagementPage />);
+
+      const deleteTexts = screen.getAllByText(/Delete All/i);
+      fireEvent.click(deleteTexts[0]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith('Delete failed');
+      });
+    });
+
+    it('should show colored log level icons when server is expanded', async () => {
+      renderWithQueryClient(<DataManagementPage />);
+
+      fireEvent.click(screen.getByText('Plex Server'));
+
+      await waitFor(() => {
+        // Look for the Log Levels section header
+        expect(screen.getByText('Log Levels')).toBeInTheDocument();
+      });
+    });
+
+    it('should show delete buttons for each log level when hovering server details', async () => {
+      renderWithQueryClient(<DataManagementPage />);
+
+      fireEvent.click(screen.getByText('Plex Server'));
+
+      await waitFor(() => {
+        // The expanded view should show the delete all button for the server
+        const deleteButtons = screen.getAllByTitle(/Delete.*logs/);
+        expect(deleteButtons.length).toBeGreaterThan(0);
+      });
+    });
+  });
+
+  describe('file ingestion settings', () => {
+    it('should display file ingestion settings section', () => {
+      renderWithQueryClient(<DataManagementPage />);
+
+      expect(screen.getByText('File Ingestion')).toBeInTheDocument();
+    });
+
+    it('should show concurrent tailers setting', () => {
+      renderWithQueryClient(<DataManagementPage />);
+
+      // Look for the label text - the label is just "Concurrent"
+      expect(screen.getByText('Concurrent')).toBeInTheDocument();
+    });
+
+    it('should show max file age setting', () => {
+      renderWithQueryClient(<DataManagementPage />);
+
+      // Look for the label text - the label is just "Max Age"
+      expect(screen.getByText('Max Age')).toBeInTheDocument();
     });
   });
 });

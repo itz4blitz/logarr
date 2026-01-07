@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 
 import { AiProviderService } from './ai-provider.service';
-import { SettingsService, type RetentionSettings } from './settings.service';
+import { SettingsService, type RetentionSettings, type FileIngestionSettings } from './settings.service';
 
 import type {
   CreateAiProviderDto,
@@ -46,6 +46,18 @@ export class SettingsController {
   async getRetentionHistory(@Query('limit') limit?: string) {
     const limitNum = limit ? parseInt(limit, 10) : 20;
     return this.settingsService.getRetentionHistory(limitNum);
+  }
+
+  // ============ File Ingestion Settings ============
+
+  @Get('file-ingestion')
+  async getFileIngestionSettings() {
+    return this.settingsService.getFileIngestionSettings();
+  }
+
+  @Put('file-ingestion')
+  async updateFileIngestionSettings(@Body() settings: Partial<FileIngestionSettings>) {
+    return this.settingsService.updateFileIngestionSettings(settings);
   }
 
   // ============ General Settings ============

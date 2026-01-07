@@ -750,4 +750,311 @@ describe('RetentionService', () => {
       expect(elapsed).toBeGreaterThanOrEqual(45); // Allow some tolerance
     });
   });
+
+  describe('deleteLogsByServerAndLevel', () => {
+    it('should delete logs for a server by specific levels', async () => {
+      // Mock delete to return 5 deleted items
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([
+                { id: '1' },
+                { id: '2' },
+                { id: '3' },
+                { id: '4' },
+                { id: '5' },
+              ]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      const result = await service.deleteLogsByServerAndLevel('server-1', ['error', 'warn']);
+
+      expect(result.deleted).toBe(5);
+      expect(result.durationMs).toBeGreaterThanOrEqual(0);
+      expect(mockDb.delete).toHaveBeenCalled();
+    });
+
+    it('should return zero when no logs match', async () => {
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      const result = await service.deleteLogsByServerAndLevel('server-1', ['debug']);
+
+      expect(result.deleted).toBe(0);
+    });
+
+    it('should log deletion operation', async () => {
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([{ id: '1' }]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      const logSpy = vi.spyOn(service['logger'], 'log');
+
+      await service.deleteLogsByServerAndLevel('server-123', ['error']);
+
+      expect(logSpy).toHaveBeenCalledWith('Deleting logs for server server-123, levels: error');
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Deleted 1 logs'));
+    });
+
+    it('should clean up orphaned occurrences after deletion', async () => {
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      await service.deleteLogsByServerAndLevel('server-1', ['info']);
+
+      // Delete should be called twice: once for logs, once for orphaned occurrences
+      expect(mockDb.delete).toHaveBeenCalledTimes(2);
+    });
+
+    it('should handle multiple levels', async () => {
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([{ id: '1' }, { id: '2' }]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      const result = await service.deleteLogsByServerAndLevel('server-1', ['error', 'warn', 'info']);
+
+      expect(result.deleted).toBe(2);
+    });
+  });
+
+  describe('deleteAllLogsByServer', () => {
+    it('should delete all logs for a server', async () => {
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([
+                { id: '1' },
+                { id: '2' },
+                { id: '3' },
+              ]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      const result = await service.deleteAllLogsByServer('server-1');
+
+      expect(result.deleted).toBe(3);
+      expect(result.durationMs).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should return zero when server has no logs', async () => {
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      const result = await service.deleteAllLogsByServer('empty-server');
+
+      expect(result.deleted).toBe(0);
+    });
+
+    it('should log deletion operation', async () => {
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([{ id: '1' }, { id: '2' }]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      const logSpy = vi.spyOn(service['logger'], 'log');
+
+      await service.deleteAllLogsByServer('server-456');
+
+      expect(logSpy).toHaveBeenCalledWith('Deleting all logs for server server-456');
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Deleted 2 logs'));
+    });
+
+    it('should clean up orphaned occurrences after deletion', async () => {
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      await service.deleteAllLogsByServer('server-1');
+
+      // Delete should be called twice: once for logs, once for orphaned occurrences
+      expect(mockDb.delete).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('deleteAllLogs', () => {
+    it('should delete all logs globally', async () => {
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        returning: vi.fn().mockReturnValue({
+          then: vi.fn().mockImplementation((resolve) =>
+            Promise.resolve([
+              { id: '1' },
+              { id: '2' },
+              { id: '3' },
+              { id: '4' },
+              { id: '5' },
+            ]).then(resolve)
+          ),
+          [Symbol.toStringTag]: 'Promise',
+        }),
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      const result = await service.deleteAllLogs();
+
+      expect(result.deleted).toBe(5);
+      expect(result.durationMs).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should return zero when database is empty', async () => {
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        returning: vi.fn().mockReturnValue({
+          then: vi.fn().mockImplementation((resolve) =>
+            Promise.resolve([]).then(resolve)
+          ),
+          [Symbol.toStringTag]: 'Promise',
+        }),
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      const result = await service.deleteAllLogs();
+
+      expect(result.deleted).toBe(0);
+    });
+
+    it('should log warning for dangerous operation', async () => {
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        returning: vi.fn().mockReturnValue({
+          then: vi.fn().mockImplementation((resolve) =>
+            Promise.resolve([]).then(resolve)
+          ),
+          [Symbol.toStringTag]: 'Promise',
+        }),
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      const warnSpy = vi.spyOn(service['logger'], 'warn');
+
+      await service.deleteAllLogs();
+
+      expect(warnSpy).toHaveBeenCalledWith('Deleting ALL logs from database');
+    });
+
+    it('should clean up orphaned occurrences after deletion', async () => {
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        returning: vi.fn().mockReturnValue({
+          then: vi.fn().mockImplementation((resolve) =>
+            Promise.resolve([]).then(resolve)
+          ),
+          [Symbol.toStringTag]: 'Promise',
+        }),
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      await service.deleteAllLogs();
+
+      // Delete should be called twice: once for logs, once for orphaned occurrences
+      expect(mockDb.delete).toHaveBeenCalledTimes(2);
+    });
+
+    it('should measure duration correctly', async () => {
+      mockDb.delete = vi.fn().mockImplementation(() => ({
+        returning: vi.fn().mockReturnValue({
+          then: vi.fn().mockImplementation((resolve) =>
+            // Add small delay to ensure measurable duration
+            new Promise((res) => setTimeout(() => res([{ id: '1' }]), 10)).then(resolve)
+          ),
+          [Symbol.toStringTag]: 'Promise',
+        }),
+        where: vi.fn().mockReturnValue({
+          returning: vi.fn().mockReturnValue({
+            then: vi.fn().mockImplementation((resolve) =>
+              Promise.resolve([]).then(resolve)
+            ),
+            [Symbol.toStringTag]: 'Promise',
+          }),
+        }),
+      }));
+
+      const result = await service.deleteAllLogs();
+
+      expect(result.durationMs).toBeGreaterThanOrEqual(0);
+    });
+  });
 });

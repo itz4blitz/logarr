@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query, Logger } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Query, Param, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import { SettingsService, type RetentionSettings } from '../settings/settings.service';
@@ -95,5 +95,46 @@ export class RetentionController {
   async getHistory(@Query('limit') limit?: string) {
     const limitNum = limit ? parseInt(limit, 10) : 20;
     return this.settingsService.getRetentionHistory(limitNum);
+  }
+
+  // ============ Targeted Deletion Endpoints ============
+
+  /**
+   * DELETE /api/retention/logs/server/:serverId
+   * Delete all logs for a specific server
+   */
+  @Delete('logs/server/:serverId')
+  @ApiOperation({ summary: 'Delete all logs for a server' })
+  @ApiResponse({ status: 200, description: 'Logs deleted successfully' })
+  async deleteServerLogs(@Param('serverId') serverId: string) {
+    this.logger.warn(`Deleting all logs for server ${serverId}`);
+    return this.retentionService.deleteAllLogsByServer(serverId);
+  }
+
+  /**
+   * DELETE /api/retention/logs/server/:serverId/level
+   * Delete logs for a specific server by level(s)
+   */
+  @Delete('logs/server/:serverId/level')
+  @ApiOperation({ summary: 'Delete logs for a server by level' })
+  @ApiResponse({ status: 200, description: 'Logs deleted successfully' })
+  async deleteServerLogsByLevel(
+    @Param('serverId') serverId: string,
+    @Body() body: { levels: string[] }
+  ) {
+    this.logger.warn(`Deleting logs for server ${serverId}, levels: ${body.levels.join(', ')}`);
+    return this.retentionService.deleteLogsByServerAndLevel(serverId, body.levels);
+  }
+
+  /**
+   * DELETE /api/retention/logs/all
+   * Delete ALL logs from the database (dangerous!)
+   */
+  @Delete('logs/all')
+  @ApiOperation({ summary: 'Delete all logs (dangerous!)' })
+  @ApiResponse({ status: 200, description: 'All logs deleted successfully' })
+  async deleteAllLogs() {
+    this.logger.warn('Deleting ALL logs from database via API');
+    return this.retentionService.deleteAllLogs();
   }
 }

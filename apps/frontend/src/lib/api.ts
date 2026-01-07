@@ -597,6 +597,15 @@ export interface RetentionSettings {
   batchSize: number;
 }
 
+export interface FileIngestionSettings {
+  /** Maximum number of files to tail concurrently per server */
+  maxConcurrentTailers: number;
+  /** Only process files modified within the last N days on initial startup */
+  maxFileAgeDays: number;
+  /** Delay between starting each file tailer (ms) to spread out load */
+  tailerStartDelayMs: number;
+}
+
 export interface RetentionHistoryItem {
   id: string;
   startedAt: string;
@@ -1136,6 +1145,47 @@ class ApiClient {
 
   async getRetentionHistory(limit = 20): Promise<RetentionHistoryItem[]> {
     return this.request<RetentionHistoryItem[]>(`/retention/history?limit=${limit}`);
+  }
+
+  // Targeted Log Deletion
+  async deleteServerLogs(serverId: string): Promise<{ deleted: number; durationMs: number }> {
+    return this.request<{ deleted: number; durationMs: number }>(
+      `/retention/logs/server/${serverId}`,
+      { method: 'DELETE' }
+    );
+  }
+
+  async deleteServerLogsByLevel(
+    serverId: string,
+    levels: string[]
+  ): Promise<{ deleted: number; durationMs: number }> {
+    return this.request<{ deleted: number; durationMs: number }>(
+      `/retention/logs/server/${serverId}/level`,
+      {
+        method: 'DELETE',
+        body: JSON.stringify({ levels }),
+      }
+    );
+  }
+
+  async deleteAllLogs(): Promise<{ deleted: number; durationMs: number }> {
+    return this.request<{ deleted: number; durationMs: number }>('/retention/logs/all', {
+      method: 'DELETE',
+    });
+  }
+
+  // File Ingestion Settings
+  async getFileIngestionSettings(): Promise<FileIngestionSettings> {
+    return this.request<FileIngestionSettings>('/settings/file-ingestion');
+  }
+
+  async updateFileIngestionSettings(
+    settings: Partial<FileIngestionSettings>
+  ): Promise<FileIngestionSettings> {
+    return this.request<FileIngestionSettings>('/settings/file-ingestion', {
+      method: 'PUT',
+      body: JSON.stringify(settings),
+    });
   }
 }
 

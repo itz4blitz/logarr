@@ -13,6 +13,10 @@ export const SETTINGS_KEYS = {
   RETENTION_INFO_DAYS: 'retention.info_days',
   RETENTION_ERROR_DAYS: 'retention.error_days',
   RETENTION_BATCH_SIZE: 'retention.batch_size',
+  // File ingestion settings
+  FILE_INGESTION_MAX_CONCURRENT_TAILERS: 'file_ingestion.max_concurrent_tailers',
+  FILE_INGESTION_MAX_FILE_AGE_DAYS: 'file_ingestion.max_file_age_days',
+  FILE_INGESTION_TAILER_START_DELAY_MS: 'file_ingestion.tailer_start_delay_ms',
 } as const;
 
 // Retention configuration interface
@@ -22,6 +26,23 @@ export interface RetentionSettings {
   errorRetentionDays: number;
   batchSize: number;
 }
+
+// File ingestion configuration interface
+export interface FileIngestionSettings {
+  /** Maximum number of files to tail concurrently per server */
+  maxConcurrentTailers: number;
+  /** Only process files modified within the last N days on initial startup */
+  maxFileAgeDays: number;
+  /** Delay between starting each file tailer (ms) to spread out load */
+  tailerStartDelayMs: number;
+}
+
+// Default file ingestion settings
+export const FILE_INGESTION_DEFAULTS: FileIngestionSettings = {
+  maxConcurrentTailers: 5,
+  maxFileAgeDays: 7,
+  tailerStartDelayMs: 500,
+};
 
 // General app settings interface
 export interface AppSettings {
@@ -130,6 +151,62 @@ export class SettingsService {
 
     // Return updated settings
     return this.getRetentionSettings();
+  }
+
+  /**
+   * Get file ingestion settings - database values with defaults
+   */
+  async getFileIngestionSettings(): Promise<FileIngestionSettings> {
+    const [maxConcurrentTailers, maxFileAgeDays, tailerStartDelayMs] = await Promise.all([
+      this.getSetting(
+        SETTINGS_KEYS.FILE_INGESTION_MAX_CONCURRENT_TAILERS,
+        FILE_INGESTION_DEFAULTS.maxConcurrentTailers
+      ),
+      this.getSetting(
+        SETTINGS_KEYS.FILE_INGESTION_MAX_FILE_AGE_DAYS,
+        FILE_INGESTION_DEFAULTS.maxFileAgeDays
+      ),
+      this.getSetting(
+        SETTINGS_KEYS.FILE_INGESTION_TAILER_START_DELAY_MS,
+        FILE_INGESTION_DEFAULTS.tailerStartDelayMs
+      ),
+    ]);
+
+    return {
+      maxConcurrentTailers,
+      maxFileAgeDays,
+      tailerStartDelayMs,
+    };
+  }
+
+  /**
+   * Update file ingestion settings in the database
+   */
+  async updateFileIngestionSettings(
+    settings: Partial<FileIngestionSettings>
+  ): Promise<FileIngestionSettings> {
+    const updates: Promise<void>[] = [];
+
+    if (settings.maxConcurrentTailers !== undefined) {
+      // Validate range: 1-20
+      const value = Math.max(1, Math.min(20, settings.maxConcurrentTailers));
+      updates.push(this.setSetting(SETTINGS_KEYS.FILE_INGESTION_MAX_CONCURRENT_TAILERS, value));
+    }
+    if (settings.maxFileAgeDays !== undefined) {
+      // Validate range: 1-365
+      const value = Math.max(1, Math.min(365, settings.maxFileAgeDays));
+      updates.push(this.setSetting(SETTINGS_KEYS.FILE_INGESTION_MAX_FILE_AGE_DAYS, value));
+    }
+    if (settings.tailerStartDelayMs !== undefined) {
+      // Validate range: 0-5000
+      const value = Math.max(0, Math.min(5000, settings.tailerStartDelayMs));
+      updates.push(this.setSetting(SETTINGS_KEYS.FILE_INGESTION_TAILER_START_DELAY_MS, value));
+    }
+
+    await Promise.all(updates);
+
+    // Return updated settings
+    return this.getFileIngestionSettings();
   }
 
   /**

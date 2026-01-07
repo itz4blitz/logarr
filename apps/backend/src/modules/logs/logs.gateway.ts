@@ -118,4 +118,23 @@ export class LogsGateway {
     // Send to all-logs room
     this.server.to('all-logs').emit('file-backfill:progress', progress);
   }
+
+  /**
+   * Broadcast file ingestion progress for a server
+   */
+  broadcastFileIngestionProgress(progress: {
+    serverId: string;
+    serverName: string;
+    status: 'discovering' | 'processing' | 'watching' | 'error';
+    totalFiles: number;
+    processedFiles: number;
+    skippedFiles: number;
+    activeFiles: number;
+    queuedFiles: number;
+    currentFiles: string[];
+    error?: string;
+  }) {
+    // Broadcast to all connected clients
+    this.server.emit('file-ingestion:progress', progress);
+  }
 }
