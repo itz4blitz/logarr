@@ -45,6 +45,8 @@ export const queryKeys = {
   cleanupPreview: ['retention', 'preview'] as const,
   retentionSettings: ['settings', 'retention'] as const,
   retentionHistory: ['settings', 'retention', 'history'] as const,
+  // File Ingestion
+  fileIngestionSettings: ['settings', 'file-ingestion'] as const,
 };
 
 // Health
@@ -623,5 +625,68 @@ export function useRetentionHistory(limit = 20) {
     queryKey: [...queryKeys.retentionHistory, limit] as const,
     queryFn: () => api.getRetentionHistory(limit),
     staleTime: 30000,
+  });
+}
+
+// File Ingestion Settings (DB-stored)
+export function useFileIngestionSettings() {
+  return useQuery({
+    queryKey: queryKeys.fileIngestionSettings,
+    queryFn: () => api.getFileIngestionSettings(),
+    staleTime: 60000,
+  });
+}
+
+export function useUpdateFileIngestionSettings() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (settings: Parameters<typeof api.updateFileIngestionSettings>[0]) =>
+      api.updateFileIngestionSettings(settings),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.fileIngestionSettings });
+    },
+  });
+}
+
+// Targeted Log Deletion
+export function useDeleteServerLogs() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (serverId: string) => api.deleteServerLogs(serverId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.storageStats });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cleanupPreview });
+      queryClient.invalidateQueries({ queryKey: ['logs'] });
+    },
+  });
+}
+
+export function useDeleteServerLogsByLevel() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ serverId, levels }: { serverId: string; levels: string[] }) =>
+      api.deleteServerLogsByLevel(serverId, levels),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.storageStats });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cleanupPreview });
+      queryClient.invalidateQueries({ queryKey: ['logs'] });
+    },
+  });
+}
+
+export function useDeleteAllLogs() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => api.deleteAllLogs(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.storageStats });
+      queryClient.invalidateQueries({ queryKey: queryKeys.cleanupPreview });
+      queryClient.invalidateQueries({ queryKey: queryKeys.retentionHistory });
+      queryClient.invalidateQueries({ queryKey: ['logs'] });
+    },
   });
 }

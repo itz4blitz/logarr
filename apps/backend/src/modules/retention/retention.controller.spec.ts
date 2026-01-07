@@ -343,4 +343,156 @@ describe('RetentionController', () => {
       expect(result[0]).toHaveProperty('errorDeleted');
     });
   });
+
+  // ============ Targeted Deletion Endpoints ============
+
+  describe('deleteServerLogs', () => {
+    beforeEach(() => {
+      mockRetentionService.deleteAllLogsByServer = vi.fn().mockResolvedValue({
+        deleted: 100,
+        durationMs: 500,
+      });
+    });
+
+    it('should delete all logs for a server', async () => {
+      const result = await controller.deleteServerLogs('server-123');
+
+      expect(result).toEqual({ deleted: 100, durationMs: 500 });
+      expect(mockRetentionService.deleteAllLogsByServer).toHaveBeenCalledWith('server-123');
+    });
+
+    it('should log warning for server log deletion', async () => {
+      const warnSpy = vi.spyOn(controller['logger'], 'warn');
+
+      await controller.deleteServerLogs('server-abc');
+
+      expect(warnSpy).toHaveBeenCalledWith('Deleting all logs for server server-abc');
+    });
+
+    it('should return zero when server has no logs', async () => {
+      mockRetentionService.deleteAllLogsByServer = vi.fn().mockResolvedValue({
+        deleted: 0,
+        durationMs: 50,
+      });
+
+      const result = await controller.deleteServerLogs('empty-server');
+
+      expect(result.deleted).toBe(0);
+    });
+
+    it('should include duration in response', async () => {
+      const result = await controller.deleteServerLogs('server-1');
+
+      expect(result).toHaveProperty('durationMs');
+      expect(typeof result.durationMs).toBe('number');
+    });
+  });
+
+  describe('deleteServerLogsByLevel', () => {
+    beforeEach(() => {
+      mockRetentionService.deleteLogsByServerAndLevel = vi.fn().mockResolvedValue({
+        deleted: 50,
+        durationMs: 250,
+      });
+    });
+
+    it('should delete logs for a server by level', async () => {
+      const result = await controller.deleteServerLogsByLevel('server-123', { levels: ['error'] });
+
+      expect(result).toEqual({ deleted: 50, durationMs: 250 });
+      expect(mockRetentionService.deleteLogsByServerAndLevel).toHaveBeenCalledWith('server-123', ['error']);
+    });
+
+    it('should support multiple levels', async () => {
+      await controller.deleteServerLogsByLevel('server-123', { levels: ['error', 'warn', 'debug'] });
+
+      expect(mockRetentionService.deleteLogsByServerAndLevel).toHaveBeenCalledWith(
+        'server-123',
+        ['error', 'warn', 'debug']
+      );
+    });
+
+    it('should log warning with levels', async () => {
+      const warnSpy = vi.spyOn(controller['logger'], 'warn');
+
+      await controller.deleteServerLogsByLevel('server-xyz', { levels: ['info', 'debug'] });
+
+      expect(warnSpy).toHaveBeenCalledWith('Deleting logs for server server-xyz, levels: info, debug');
+    });
+
+    it('should return deletion count', async () => {
+      mockRetentionService.deleteLogsByServerAndLevel = vi.fn().mockResolvedValue({
+        deleted: 25,
+        durationMs: 100,
+      });
+
+      const result = await controller.deleteServerLogsByLevel('server-1', { levels: ['warn'] });
+
+      expect(result.deleted).toBe(25);
+    });
+
+    it('should handle empty levels array', async () => {
+      mockRetentionService.deleteLogsByServerAndLevel = vi.fn().mockResolvedValue({
+        deleted: 0,
+        durationMs: 10,
+      });
+
+      const result = await controller.deleteServerLogsByLevel('server-1', { levels: [] });
+
+      expect(result.deleted).toBe(0);
+    });
+  });
+
+  describe('deleteAllLogs', () => {
+    beforeEach(() => {
+      mockRetentionService.deleteAllLogs = vi.fn().mockResolvedValue({
+        deleted: 10000,
+        durationMs: 2000,
+      });
+    });
+
+    it('should delete all logs globally', async () => {
+      const result = await controller.deleteAllLogs();
+
+      expect(result).toEqual({ deleted: 10000, durationMs: 2000 });
+      expect(mockRetentionService.deleteAllLogs).toHaveBeenCalled();
+    });
+
+    it('should log warning for dangerous operation', async () => {
+      const warnSpy = vi.spyOn(controller['logger'], 'warn');
+
+      await controller.deleteAllLogs();
+
+      expect(warnSpy).toHaveBeenCalledWith('Deleting ALL logs from database via API');
+    });
+
+    it('should return zero when database is empty', async () => {
+      mockRetentionService.deleteAllLogs = vi.fn().mockResolvedValue({
+        deleted: 0,
+        durationMs: 100,
+      });
+
+      const result = await controller.deleteAllLogs();
+
+      expect(result.deleted).toBe(0);
+    });
+
+    it('should include duration in response', async () => {
+      const result = await controller.deleteAllLogs();
+
+      expect(result).toHaveProperty('durationMs');
+      expect(result.durationMs).toBe(2000);
+    });
+
+    it('should handle large deletions', async () => {
+      mockRetentionService.deleteAllLogs = vi.fn().mockResolvedValue({
+        deleted: 1000000,
+        durationMs: 60000,
+      });
+
+      const result = await controller.deleteAllLogs();
+
+      expect(result.deleted).toBe(1000000);
+    });
+  });
 });
