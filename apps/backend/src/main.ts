@@ -38,6 +38,7 @@ async function bootstrap() {
     .addTag('servers', 'Media server management')
     .addTag('logs', 'Log ingestion and search')
     .addTag('sessions', 'Session tracking')
+    .addTag('audit', 'Global audit logging')
     .addTag('ai', 'AI-powered analysis')
     .build();
 
