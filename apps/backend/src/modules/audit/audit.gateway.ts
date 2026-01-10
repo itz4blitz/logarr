@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import {
   WebSocketGateway,
   WebSocketServer,
@@ -5,7 +6,6 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 
 /**
@@ -14,7 +14,8 @@ import { Server, Socket } from 'socket.io';
  */
 @WebSocketGateway({
   cors: {
-    origin: (process.env as { CORS_ORIGIN?: string }).CORS_ORIGIN?.split(',') || 'http://localhost:3000',
+    origin:
+      (process.env as { CORS_ORIGIN?: string }).CORS_ORIGIN?.split(',') || 'http://localhost:3000',
     credentials: true,
   },
   namespace: '/audit',
@@ -48,7 +49,7 @@ export class AuditGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('ping')
-  handlePing(client: Socket): void {
+  handlePing(_client: Socket): void {
     this.server.emit('pong', { timestamp: new Date().toISOString() });
   }
 }

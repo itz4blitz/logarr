@@ -1,7 +1,8 @@
 import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { AuditService } from './audit.service';
+
 import { AuditGateway } from './audit.gateway';
+import { AuditService } from './audit.service';
 
 // Extend Express Request type
 interface AuthenticatedRequest extends Request {
@@ -33,7 +34,7 @@ export class AuditMiddleware implements NestMiddleware {
 
   constructor(
     private readonly auditService: AuditService,
-    private readonly auditGateway: AuditGateway,
+    private readonly auditGateway: AuditGateway
   ) {}
 
   use(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
@@ -109,7 +110,10 @@ export class AuditMiddleware implements NestMiddleware {
     return this.excludedPaths.some((excluded) => path.startsWith(excluded));
   }
 
-  private getActionFromMethod(method: string, success: boolean): 'create' | 'update' | 'delete' | 'read' | 'error' | 'other' {
+  private getActionFromMethod(
+    method: string,
+    success: boolean
+  ): 'create' | 'update' | 'delete' | 'read' | 'error' | 'other' {
     if (!success) return 'error';
 
     switch (method.toUpperCase()) {
@@ -127,7 +131,20 @@ export class AuditMiddleware implements NestMiddleware {
     }
   }
 
-  private getCategoryFromPath(path: string): 'auth' | 'server' | 'log_entry' | 'session' | 'playback' | 'issue' | 'ai_analysis' | 'api_key' | 'settings' | 'retention' | 'proxy' | 'other' {
+  private getCategoryFromPath(
+    path: string
+  ):
+    | 'auth'
+    | 'server'
+    | 'log_entry'
+    | 'session'
+    | 'issue'
+    | 'ai_analysis'
+    | 'api_key'
+    | 'settings'
+    | 'retention'
+    | 'proxy'
+    | 'other' {
     if (path.includes('/auth') || path.includes('/login')) return 'auth';
     if (path.includes('/servers')) return 'server';
     if (path.includes('/logs')) return 'log_entry';
@@ -141,7 +158,10 @@ export class AuditMiddleware implements NestMiddleware {
     return 'other';
   }
 
-  private extractEntityInfo(path: string, category: string): { entityType: string; entityId?: string } {
+  private extractEntityInfo(
+    path: string,
+    _category: string
+  ): { entityType: string; entityId?: string } {
     const parts = path.split('/').filter(Boolean);
 
     // Remove 'api' prefix if present
@@ -155,14 +175,21 @@ export class AuditMiddleware implements NestMiddleware {
     // Extract entity ID from second segment if it looks like a UUID
     const secondPart = parts[1];
     const entityId =
-      parts.length > 1 && secondPart && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(secondPart)
+      parts.length > 1 &&
+      secondPart &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(secondPart)
         ? secondPart
         : undefined;
 
     return { entityType, ...(entityId !== undefined && { entityId }) };
   }
 
-  private buildDescription(method: string, path: string, statusCode: number, success: boolean): string {
+  private buildDescription(
+    method: string,
+    path: string,
+    statusCode: number,
+    success: boolean
+  ): string {
     const status = success ? 'Success' : 'Failed';
     return `${method} ${path} - ${status} (${statusCode})`;
   }

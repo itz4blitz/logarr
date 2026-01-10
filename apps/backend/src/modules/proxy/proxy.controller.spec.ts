@@ -1,7 +1,5 @@
-import { InternalServerErrorException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
-import { of, throwError } from 'rxjs';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 import { ApiKeyGuard } from '../../guards/api-key.guard';
