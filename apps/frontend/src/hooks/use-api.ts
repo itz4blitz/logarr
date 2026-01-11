@@ -9,6 +9,9 @@ import type {
   CreateAiProviderDto,
   UpdateAiProviderDto,
   AiProviderType,
+  CreateApiKeyDto,
+  UpdateApiKeyDto,
+  ApiKeyInfo,
 } from '@/lib/api';
 
 import { api } from '@/lib/api';
@@ -47,6 +50,8 @@ export const queryKeys = {
   retentionHistory: ['settings', 'retention', 'history'] as const,
   // File Ingestion
   fileIngestionSettings: ['settings', 'file-ingestion'] as const,
+  // API Keys
+  apiKeys: ['settings', 'api-keys'] as const,
 };
 
 // Health
@@ -688,5 +693,109 @@ export function useDeleteAllLogs() {
       queryClient.invalidateQueries({ queryKey: queryKeys.retentionHistory });
       queryClient.invalidateQueries({ queryKey: ['logs'] });
     },
+  });
+}
+
+// API Keys
+export function useApiKeys() {
+  return useQuery({
+    queryKey: queryKeys.apiKeys,
+    queryFn: () => api.getApiKeys(),
+    staleTime: 0, // Don't cache - always fetch fresh data
+    gcTime: 0, // Don't cache garbage either
+    retry: 1, // Only retry once to avoid long delays
+  });
+}
+
+export function useCreateApiKey() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: CreateApiKeyDto) => api.createApiKey(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiKeys });
+    },
+  });
+}
+
+export function useUpdateApiKey() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateApiKeyDto }) => api.updateApiKey(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiKeys });
+    },
+  });
+}
+
+export function useDeleteApiKey() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => api.deleteApiKey(id),
+    onMutate: async (id) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: queryKeys.apiKeys });
+
+      // Snapshot previous value
+      const previousApiKeys = queryClient.getQueryData(queryKeys.apiKeys);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData(queryKeys.apiKeys, (old: ApiKeyInfo[] | undefined) =>
+        old?.filter((key) => key.id !== id)
+      );
+
+      // Return context with previous value
+      return { previousApiKeys };
+    },
+    onError: (err, id, context) => {
+      // Rollback to previous value on error
+      if (context?.previousApiKeys) {
+        queryClient.setQueryData(queryKeys.apiKeys, context.previousApiKeys);
+      }
+    },
+    onSettled: () => {
+      // Refetch to ensure server state matches client state
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiKeys });
+    },
+  });
+}
+
+export function useApiKeyAuditLogs(keyId: string | null, limit: number = 100) {
+  return useQuery({
+    queryKey: ['apiKeyAuditLogs', keyId, limit],
+    queryFn: () => (keyId ? api.getApiKeyAuditLogs(keyId, limit) : []),
+    enabled: !!keyId, // Only run query if keyId is provided
+    staleTime: 0, // Don't cache - always fetch fresh data
+    gcTime: 0, // Don't cache garbage either
+  });
+}
+
+// Global Audit Logs
+export function useAuditLogs(params?: {
+  userId?: string;
+  action?: string;
+  category?: string;
+  entityType?: string;
+  entityId?: string;
+  success?: boolean;
+  limit?: number;
+  offset?: number;
+}) {
+  return useQuery({
+    queryKey: ['auditLogs', params],
+    queryFn: () => api.getAuditLogs(params),
+    placeholderData: keepPreviousData,
+    staleTime: 10000, // Consider data fresh for 10 seconds
+  });
+}
+
+export function useAuditStatistics(days: number = 30) {
+  return useQuery({
+    queryKey: ['auditStatistics', days],
+    queryFn: () => api.getAuditStatistics(days),
+    staleTime: 60000, // Stats can be cached for 1 minute
+    refetchInterval: 30000, // Refetch every 30 seconds
   });
 }
