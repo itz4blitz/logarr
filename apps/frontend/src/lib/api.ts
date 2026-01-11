@@ -780,8 +780,32 @@ export interface ApiKeyAuditLog {
 }
 
 // Global Audit Log types
-export type AuditLogAction = 'create' | 'update' | 'delete' | 'read' | 'login' | 'logout' | 'error' | 'export' | 'import' | 'sync' | 'test' | 'other';
-export type AuditLogCategory = 'auth' | 'server' | 'log_entry' | 'session' | 'playback' | 'issue' | 'ai_analysis' | 'api_key' | 'settings' | 'retention' | 'proxy' | 'other';
+export type AuditLogAction =
+  | 'create'
+  | 'update'
+  | 'delete'
+  | 'read'
+  | 'login'
+  | 'logout'
+  | 'error'
+  | 'export'
+  | 'import'
+  | 'sync'
+  | 'test'
+  | 'other';
+export type AuditLogCategory =
+  | 'auth'
+  | 'server'
+  | 'log_entry'
+  | 'session'
+  | 'playback'
+  | 'issue'
+  | 'ai_analysis'
+  | 'api_key'
+  | 'settings'
+  | 'retention'
+  | 'proxy'
+  | 'other';
 
 export interface AuditLogEntry {
   id: string;
@@ -1293,10 +1317,7 @@ class ApiClient {
     });
   }
 
-  async updateApiKey(
-    id: string,
-    data: UpdateApiKeyDto
-  ): Promise<ApiKeyInfo> {
+  async updateApiKey(id: string, data: UpdateApiKeyDto): Promise<ApiKeyInfo> {
     return this.request<ApiKeyInfo>(`/settings/api-keys/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),

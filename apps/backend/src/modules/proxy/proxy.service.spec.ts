@@ -107,9 +107,7 @@ describe('ProxyService', () => {
     it('should throw NotFoundException when server not found', async () => {
       configureMockDb(mockDb, { select: [] });
 
-      await expect(service.findUserServer('non-existent')).rejects.toThrow(
-        NotFoundException
-      );
+      await expect(service.findUserServer('non-existent')).rejects.toThrow(NotFoundException);
       await expect(service.findUserServer('non-existent')).rejects.toThrow(
         'Server with ID non-existent not found'
       );
@@ -214,9 +212,7 @@ describe('ProxyService', () => {
       const error = new Error('Request failed with status code 401') as any;
       error.response = { status: 401 };
 
-      vi.mocked(mockHttpService.request)!.mockReturnValue(
-        throwError(() => error)
-      );
+      vi.mocked(mockHttpService.request)!.mockReturnValue(throwError(() => error));
 
       await expect(
         service.proxyRequest('server-4', {
@@ -247,9 +243,7 @@ describe('ProxyService', () => {
       const error = new Error('Request failed with status code 403') as any;
       error.response = { status: 403 };
 
-      vi.mocked(mockHttpService.request)!.mockReturnValue(
-        throwError(() => error)
-      );
+      vi.mocked(mockHttpService.request)!.mockReturnValue(throwError(() => error));
 
       await expect(
         service.proxyRequest('server-5', {
@@ -274,9 +268,7 @@ describe('ProxyService', () => {
       const error = new Error('connect ECONNREFUSED') as any;
       error.code = 'ECONNREFUSED';
 
-      vi.mocked(mockHttpService.request)!.mockReturnValue(
-        throwError(() => error)
-      );
+      vi.mocked(mockHttpService.request)!.mockReturnValue(throwError(() => error));
 
       await expect(
         service.proxyRequest('server-6', {
@@ -307,9 +299,7 @@ describe('ProxyService', () => {
       const error = new Error('getaddrinfo ENOTFOUND') as any;
       error.code = 'ENOTFOUND';
 
-      vi.mocked(mockHttpService.request)!.mockReturnValue(
-        throwError(() => error)
-      );
+      vi.mocked(mockHttpService.request)!.mockReturnValue(throwError(() => error));
 
       await expect(
         service.proxyRequest('server-7', {
@@ -334,9 +324,7 @@ describe('ProxyService', () => {
       const error = new Error('connect ETIMEDOUT') as any;
       error.code = 'ETIMEDOUT';
 
-      vi.mocked(mockHttpService.request)!.mockReturnValue(
-        throwError(() => error)
-      );
+      vi.mocked(mockHttpService.request)!.mockReturnValue(throwError(() => error));
 
       await expect(
         service.proxyRequest('server-8', {
@@ -696,9 +684,7 @@ describe('ProxyService', () => {
       configureMockDb(mockDb, { select: [mockServer] });
 
       const error = new Error('Unknown error');
-      vi.mocked(mockHttpService.request)!.mockReturnValue(
-        throwError(() => error)
-      );
+      vi.mocked(mockHttpService.request)!.mockReturnValue(throwError(() => error));
 
       await expect(
         service.proxyRequest('server-16', {

@@ -23,6 +23,7 @@ interface FileIngestionStatus {
   enabledServers: number;
   healthyServers: number;
   error?: string;
+  inGracePeriod?: boolean;
 }
 
 interface HealthResponse {
@@ -46,6 +47,8 @@ interface VersionResponse {
 @Controller()
 export class AppController {
   private readonly version: string;
+  private readonly startTime: number;
+  private readonly startupGracePeriodMs: number;
 
   constructor(
     @Inject(DATABASE_CONNECTION)
@@ -54,6 +57,13 @@ export class AppController {
     @Inject(REDIS_CLIENT)
     private readonly redis: Redis | null
   ) {
+    // Record application start time for health check grace period
+    this.startTime = Date.now();
+
+    // Read startup grace period from environment (default 60 seconds)
+    // This gives file ingestion time to initialize before health checks fail
+    const graceSeconds = parseInt(process.env['HEALTH_CHECK_STARTUP_GRACE_SECONDS'] || '60', 10);
+    this.startupGracePeriodMs = graceSeconds * 1000;
     // Read version from root package.json (single source of truth)
     // Try multiple paths to handle both dev (src/) and prod (dist/) scenarios
     const possiblePaths = [
@@ -165,9 +175,24 @@ export class AppController {
   }
 
   /**
+   * Check if we are in the startup grace period
+   * During this time, file ingestion failures are treated as degraded rather than error
+   */
+  private isInStartupGracePeriod(): boolean {
+    const uptime = Date.now() - this.startTime;
+    return uptime < this.startupGracePeriodMs;
+  }
+
+  /**
    * Check file ingestion health by validating enabled servers have accessible paths
+   *
+   * During the startup grace period (default 60s), file ingestion failures are treated
+   * as 'degraded' instead of 'error' to prevent container health check failures during
+   * docker compose restart scenarios where volumes may not be immediately available.
    */
   private async checkFileIngestionHealth(): Promise<FileIngestionStatus> {
+    const inGracePeriod = this.isInStartupGracePeriod();
+
     // Get servers with file ingestion enabled
     const enabledServers = await this.db
       .select({
@@ -185,6 +210,7 @@ export class AppController {
         status: 'ok',
         enabledServers: 0,
         healthyServers: 0,
+        inGracePeriod,
       };
     }
 
@@ -215,13 +241,22 @@ export class AppController {
       }
     }
 
-    const status: FileIngestionStatus['status'] =
-      healthyServers === 0 ? 'error' : healthyServers < enabledServers.length ? 'degraded' : 'ok';
+    // During startup grace period, treat file ingestion issues as degraded, not error
+    // This allows containers to pass health checks even when volumes aren't ready yet
+    let status: FileIngestionStatus['status'];
+    if (healthyServers === 0) {
+      status = inGracePeriod ? 'degraded' : 'error';
+    } else if (healthyServers < enabledServers.length) {
+      status = 'degraded';
+    } else {
+      status = 'ok';
+    }
 
     const result: FileIngestionStatus = {
       status,
       enabledServers: enabledServers.length,
       healthyServers,
+      inGracePeriod,
     };
 
     if (errors.length > 0) {

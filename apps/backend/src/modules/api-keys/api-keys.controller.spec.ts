@@ -483,9 +483,12 @@ describe('ApiKeysController', () => {
 
       await controller.updateApiKey('123e4567-e89b-12d3-a456-426614174000', dto);
 
-      expect(mockApiKeysService.updateApiKey).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000', {
-        notes: '  ',
-      });
+      expect(mockApiKeysService.updateApiKey).toHaveBeenCalledWith(
+        '123e4567-e89b-12d3-a456-426614174000',
+        {
+          notes: '  ',
+        }
+      );
     });
 
     it('should filter out null values from update DTO', async () => {
@@ -518,7 +521,10 @@ describe('ApiKeysController', () => {
 
       await controller.updateApiKey('123e4567-e89b-12d3-a456-426614174000', dto);
 
-      expect(mockApiKeysService.updateApiKey).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000', {});
+      expect(mockApiKeysService.updateApiKey).toHaveBeenCalledWith(
+        '123e4567-e89b-12d3-a456-426614174000',
+        {}
+      );
     });
 
     it('should throw NotFoundException when updating non-existent key', async () => {
@@ -526,9 +532,9 @@ describe('ApiKeysController', () => {
         new NotFoundException('API key with ID non-existent not found')
       );
 
-      await expect(
-        controller.updateApiKey('non-existent', { name: 'New Name' })
-      ).rejects.toThrow(NotFoundException);
+      await expect(controller.updateApiKey('non-existent', { name: 'New Name' })).rejects.toThrow(
+        NotFoundException
+      );
     });
   });
 
@@ -540,7 +546,9 @@ describe('ApiKeysController', () => {
         controller.deleteApiKey('123e4567-e89b-12d3-a456-426614174000')
       ).resolves.not.toThrow();
 
-      expect(mockApiKeysService.deleteApiKey).toHaveBeenCalledWith('123e4567-e89b-12d3-a456-426614174000');
+      expect(mockApiKeysService.deleteApiKey).toHaveBeenCalledWith(
+        '123e4567-e89b-12d3-a456-426614174000'
+      );
     });
 
     it('should throw NotFoundException when deleting non-existent key', async () => {

@@ -165,10 +165,7 @@ export class ProxyService {
     const errorCode = (error as { code?: string })?.code;
     const errorResponse = (error as { response?: { status?: number } })?.response;
 
-    this.logger.error(
-      `Proxy error for ${providerId} (${serverName}): ${errorMessage}`,
-      errorStack
-    );
+    this.logger.error(`Proxy error for ${providerId} (${serverName}): ${errorMessage}`, errorStack);
 
     if (errorResponse?.status === 401 || errorResponse?.status === 403) {
       throw new ForbiddenException(

@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
 import { AppController } from './app.controller';
 import { DATABASE_CONNECTION } from './database/database.module';
@@ -9,6 +9,9 @@ import type { TestingModule } from '@nestjs/testing';
 
 describe('AppController', () => {
   let controller: AppController;
+
+  // Store original env to restore after tests
+  const originalEnv = process.env['HEALTH_CHECK_STARTUP_GRACE_SECONDS'];
 
   const mockDb = {
     execute: () => Promise.resolve([{ '?column?': 1 }]),
@@ -24,6 +27,9 @@ describe('AppController', () => {
   };
 
   beforeEach(async () => {
+    // Reset env to default before each test
+    delete process.env['HEALTH_CHECK_STARTUP_GRACE_SECONDS'];
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
       providers: [
@@ -33,6 +39,11 @@ describe('AppController', () => {
     }).compile();
 
     controller = module.get<AppController>(AppController);
+  });
+
+  afterEach(() => {
+    // Restore original env
+    process.env['HEALTH_CHECK_STARTUP_GRACE_SECONDS'] = originalEnv;
   });
 
   describe('getVersion', () => {
@@ -168,6 +179,87 @@ describe('AppController', () => {
       expect(result.status).toBe('error');
       expect(result.services.redis.status).toBe('error');
       expect(result.services.redis.error).toBe('Redis not configured');
+    });
+  });
+
+  describe('startup grace period (Issue #26)', () => {
+    it('should include inGracePeriod in file ingestion status', async () => {
+      const result = await controller.health();
+
+      expect(result.services.fileIngestion).toHaveProperty('inGracePeriod');
+      expect(typeof result.services.fileIngestion.inGracePeriod).toBe('boolean');
+    });
+
+    it('should be in grace period immediately after startup', async () => {
+      // Create a new controller with a 10 second grace period
+      process.env['HEALTH_CHECK_STARTUP_GRACE_SECONDS'] = '10';
+
+      const module: TestingModule = await Test.createTestingModule({
+        controllers: [AppController],
+        providers: [
+          { provide: DATABASE_CONNECTION, useValue: mockDb },
+          { provide: REDIS_CLIENT, useValue: mockRedis },
+        ],
+      }).compile();
+
+      const freshController = module.get<AppController>(AppController);
+      const result = await freshController.health();
+
+      expect(result.services.fileIngestion.inGracePeriod).toBe(true);
+    });
+
+    it('should default to 60 second grace period when env not set', async () => {
+      delete process.env['HEALTH_CHECK_STARTUP_GRACE_SECONDS'];
+
+      const module: TestingModule = await Test.createTestingModule({
+        controllers: [AppController],
+        providers: [
+          { provide: DATABASE_CONNECTION, useValue: mockDb },
+          { provide: REDIS_CLIENT, useValue: mockRedis },
+        ],
+      }).compile();
+
+      const freshController = module.get<AppController>(AppController);
+      const result = await freshController.health();
+
+      expect(result.services.fileIngestion.inGracePeriod).toBe(true);
+    });
+
+    it('should treat file ingestion failures as degraded during grace period', async () => {
+      // Create controller with very short grace period for testing
+      process.env['HEALTH_CHECK_STARTUP_GRACE_SECONDS'] = '10';
+
+      const mockServers = [
+        {
+          id: 'server-1',
+          name: 'Test Server 1',
+          logPaths: ['/tmp/missing.log'],
+        },
+      ];
+
+      const mockDbWithServers = {
+        execute: () => Promise.resolve([{ '?column?': 1 }]),
+        select: () => ({
+          from: () => ({
+            where: () => mockServers,
+          }),
+        }),
+      };
+
+      const module: TestingModule = await Test.createTestingModule({
+        controllers: [AppController],
+        providers: [
+          { provide: DATABASE_CONNECTION, useValue: mockDbWithServers },
+          { provide: REDIS_CLIENT, useValue: mockRedis },
+        ],
+      }).compile();
+
+      const testController = module.get<AppController>(AppController);
+      const result = await testController.health();
+
+      // During grace period, inaccessible paths should result in 'degraded', not 'error'
+      expect(result.services.fileIngestion.status).toBe('degraded');
+      expect(result.services.fileIngestion.inGracePeriod).toBe(true);
     });
   });
 
@@ -336,7 +428,8 @@ describe('AppController', () => {
       const controller = module.get<AppController>(AppController);
       const result = await controller.health();
 
-      expect(result.services.fileIngestion.status).toBe('error');
+      // During grace period, should be degraded
+      expect(result.services.fileIngestion.status).toBe('degraded');
       expect(result.services.fileIngestion.enabledServers).toBe(2);
       expect(result.services.fileIngestion.healthyServers).toBe(0);
     });
@@ -375,7 +468,8 @@ describe('AppController', () => {
       const controller = module.get<AppController>(AppController);
       const result = await controller.health();
 
-      expect(result.services.fileIngestion.status).toBe('error');
+      // During grace period, should be degraded
+      expect(result.services.fileIngestion.status).toBe('degraded');
       expect(result.services.fileIngestion.enabledServers).toBe(2);
       expect(result.services.fileIngestion.healthyServers).toBe(0);
       expect(result.services.fileIngestion.error).toContain('No log paths configured');

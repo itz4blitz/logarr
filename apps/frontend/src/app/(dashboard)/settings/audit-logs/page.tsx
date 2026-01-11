@@ -120,7 +120,8 @@ export default function AuditLogsPage() {
 
     // Monitor connection status
     const checkConnection = setInterval(() => {
-      const socket = (window as unknown as { __auditSocket?: { connected: boolean } }).__auditSocket;
+      const socket = (window as unknown as { __auditSocket?: { connected: boolean } })
+        .__auditSocket;
       setIsConnected(socket?.connected ?? false);
     }, 1000);
 
@@ -165,7 +166,22 @@ export default function AuditLogsPage() {
   const exportToCSV = () => {
     if (!filteredLogs || filteredLogs.length === 0) return;
 
-    const headers = ['Timestamp', 'User ID', 'Action', 'Category', 'Entity Type', 'Entity ID', 'Description', 'Endpoint', 'Method', 'Status Code', 'Success', 'Response Time (ms)', 'IP Address', 'Error Message'];
+    const headers = [
+      'Timestamp',
+      'User ID',
+      'Action',
+      'Category',
+      'Entity Type',
+      'Entity ID',
+      'Description',
+      'Endpoint',
+      'Method',
+      'Status Code',
+      'Success',
+      'Response Time (ms)',
+      'IP Address',
+      'Error Message',
+    ];
     const csvRows = [
       headers.join(','),
       ...filteredLogs.map((log) =>
@@ -200,14 +216,18 @@ export default function AuditLogsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const hasActiveFilters = searchTerm !== '' || actionFilter !== 'all' || categoryFilter !== 'all' || successFilter !== 'all';
+  const hasActiveFilters =
+    searchTerm !== '' ||
+    actionFilter !== 'all' ||
+    categoryFilter !== 'all' ||
+    successFilter !== 'all';
   const filteredCount = filteredLogs.length;
   const totalCount = combinedLogs?.length || 0;
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-hidden">
       {/* Header with connection status */}
-      <div className="shrink-0 flex items-center justify-between">
+      <div className="flex shrink-0 items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Audit Logs</h1>
         <div className="flex items-center gap-2 text-xs">
           {isConnected ? (
@@ -217,7 +237,7 @@ export default function AuditLogsPage() {
             </>
           ) : (
             <>
-              <WifiOff className="h-3 w-3 text-muted-foreground" />
+              <WifiOff className="text-muted-foreground h-3 w-3" />
               <span className="text-muted-foreground">Connecting...</span>
             </>
           )}
@@ -226,14 +246,14 @@ export default function AuditLogsPage() {
 
       {/* Statistics Cards - Fixed height */}
       {stats && (
-        <div className="shrink-0 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid shrink-0 gap-3 md:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-lg border p-3">
             <div className="flex items-center gap-2">
-              <Activity className="h-4 w-4 text-muted-foreground" />
+              <Activity className="text-muted-foreground h-4 w-4" />
               <span className="text-xs font-medium">Total Logs</span>
             </div>
             <div className="mt-1 text-xl font-bold">{stats.totalLogs.toLocaleString()}</div>
-            <div className="text-[10px] text-muted-foreground">Last 30 days</div>
+            <div className="text-muted-foreground text-[10px]">Last 30 days</div>
           </div>
 
           <div className="rounded-lg border p-3">
@@ -242,9 +262,14 @@ export default function AuditLogsPage() {
               <span className="text-xs font-medium">Success Rate</span>
             </div>
             <div className="mt-1 text-xl font-bold">
-              {stats.totalLogs > 0 ? ((stats.successCount / stats.totalLogs) * 100).toFixed(1) : '0'}%
+              {stats.totalLogs > 0
+                ? ((stats.successCount / stats.totalLogs) * 100).toFixed(1)
+                : '0'}
+              %
             </div>
-            <div className="text-[10px] text-muted-foreground">{stats.successCount.toLocaleString()} successful</div>
+            <div className="text-muted-foreground text-[10px]">
+              {stats.successCount.toLocaleString()} successful
+            </div>
           </div>
 
           <div className="rounded-lg border p-3">
@@ -253,8 +278,9 @@ export default function AuditLogsPage() {
               <span className="text-xs font-medium">Errors</span>
             </div>
             <div className="mt-1 text-xl font-bold">{stats.errorCount.toLocaleString()}</div>
-            <div className="text-[10px] text-muted-foreground">
-              {stats.totalLogs > 0 ? ((stats.errorCount / stats.totalLogs) * 100).toFixed(1) : '0'}% error rate
+            <div className="text-muted-foreground text-[10px]">
+              {stats.totalLogs > 0 ? ((stats.errorCount / stats.totalLogs) * 100).toFixed(1) : '0'}%
+              error rate
             </div>
           </div>
 
@@ -264,13 +290,15 @@ export default function AuditLogsPage() {
               <span className="text-xs font-medium">Active Users</span>
             </div>
             <div className="mt-1 text-xl font-bold">{stats.byUser.length}</div>
-            <div className="text-[10px] text-muted-foreground">Top: {stats.byUser[0]?.userId || 'N/A'}</div>
+            <div className="text-muted-foreground text-[10px]">
+              Top: {stats.byUser[0]?.userId || 'N/A'}
+            </div>
           </div>
         </div>
       )}
 
       {/* Filters - Fixed */}
-      <div className="shrink-0 rounded-lg border p-3 space-y-3">
+      <div className="shrink-0 space-y-3 rounded-lg border p-3">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <h3 className="text-xs font-semibold">Filters</h3>
@@ -286,13 +314,13 @@ export default function AuditLogsPage() {
                 }}
                 className="h-6 text-[10px]"
               >
-                <X className="h-3 w-3 mr-1" />
+                <X className="mr-1 h-3 w-3" />
                 Clear
               </Button>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-muted-foreground text-[10px]">
               Showing {filteredCount} of {totalCount} logs
             </span>
             <Button
@@ -302,28 +330,28 @@ export default function AuditLogsPage() {
               disabled={!filteredLogs || filteredLogs.length === 0}
               className="h-7 text-xs"
             >
-              <Download className="h-3 w-3 mr-1" />
+              <Download className="mr-1 h-3 w-3" />
               Export
             </Button>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="relative flex-1 min-w-[180px] max-w-sm">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <div className="relative max-w-sm min-w-[180px] flex-1">
+            <Search className="text-muted-foreground absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search endpoint, entity, description..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-8 w-full rounded-md border border-input bg-background pl-8 pr-3 text-xs outline-none focus:ring-1 focus:ring-ring"
+              className="border-input bg-background focus:ring-ring h-8 w-full rounded-md border pr-3 pl-8 text-xs outline-none focus:ring-1"
             />
           </div>
 
           <select
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
-            className="h-8 rounded-md border border-input bg-background px-3 text-xs outline-none focus:ring-1 focus:ring-ring"
+            className="border-input bg-background focus:ring-ring h-8 rounded-md border px-3 text-xs outline-none focus:ring-1"
           >
             <option value="all">All Actions</option>
             <option value="read">Read</option>
@@ -336,7 +364,7 @@ export default function AuditLogsPage() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="h-8 rounded-md border border-input bg-background px-3 text-xs outline-none focus:ring-1 focus:ring-ring"
+            className="border-input bg-background focus:ring-ring h-8 rounded-md border px-3 text-xs outline-none focus:ring-1"
           >
             <option value="all">All Categories</option>
             <option value="auth">Auth</option>
@@ -354,7 +382,7 @@ export default function AuditLogsPage() {
           <select
             value={successFilter}
             onChange={(e) => setSuccessFilter(e.target.value)}
-            className="h-8 rounded-md border border-input bg-background px-3 text-xs outline-none focus:ring-1 focus:ring-ring"
+            className="border-input bg-background focus:ring-ring h-8 rounded-md border px-3 text-xs outline-none focus:ring-1"
           >
             <option value="all">All Status</option>
             <option value="success">Success</option>
@@ -364,10 +392,10 @@ export default function AuditLogsPage() {
       </div>
 
       {/* Table - Scrollable */}
-      <div className="flex-1 min-h-0 rounded-lg border overflow-auto">
+      <div className="min-h-0 flex-1 overflow-auto rounded-lg border">
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
           </div>
         ) : !auditLogs || auditLogs.length === 0 ? (
           <div className="flex h-full items-center justify-center p-8">
@@ -386,30 +414,38 @@ export default function AuditLogsPage() {
         ) : (
           <div className="h-full overflow-auto">
             <Table>
-              <TableHeader className="sticky top-0 bg-background">
+              <TableHeader className="bg-background sticky top-0">
                 <TableRow>
-                  <TableHead className="w-[160px] text-xs py-2">Timestamp</TableHead>
-                  <TableHead className="w-[90px] text-xs py-2">Action</TableHead>
-                  <TableHead className="w-[90px] text-xs py-2">Category</TableHead>
-                  <TableHead className="text-xs py-2">Description</TableHead>
-                  <TableHead className="w-[130px] text-xs py-2">Endpoint</TableHead>
-                  <TableHead className="w-[70px] text-xs py-2">Method</TableHead>
-                  <TableHead className="w-[70px] text-xs py-2">Status</TableHead>
-                  <TableHead className="w-[90px] text-xs py-2">Response</TableHead>
-                  <TableHead className="w-[110px] text-xs py-2">User</TableHead>
-                  <TableHead className="w-[130px] text-xs py-2">IP</TableHead>
-                  <TableHead className="w-[70px] text-xs py-2">✓</TableHead>
+                  <TableHead className="w-[160px] py-2 text-xs">Timestamp</TableHead>
+                  <TableHead className="w-[90px] py-2 text-xs">Action</TableHead>
+                  <TableHead className="w-[90px] py-2 text-xs">Category</TableHead>
+                  <TableHead className="py-2 text-xs">Description</TableHead>
+                  <TableHead className="w-[130px] py-2 text-xs">Endpoint</TableHead>
+                  <TableHead className="w-[70px] py-2 text-xs">Method</TableHead>
+                  <TableHead className="w-[70px] py-2 text-xs">Status</TableHead>
+                  <TableHead className="w-[90px] py-2 text-xs">Response</TableHead>
+                  <TableHead className="w-[110px] py-2 text-xs">User</TableHead>
+                  <TableHead className="w-[130px] py-2 text-xs">IP</TableHead>
+                  <TableHead className="w-[70px] py-2 text-xs">✓</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredLogs.map((log) => (
                   <TableRow key={log.id} className="hover:bg-muted/50">
-                    <TableCell className="text-[10px] font-mono py-2">
+                    <TableCell className="py-2 font-mono text-[10px]">
                       {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
                     </TableCell>
                     <TableCell className="py-2">
                       <Badge
-                        variant={log.action === 'create' ? 'default' : log.action === 'delete' ? 'destructive' : log.action === 'update' ? 'secondary' : 'outline'}
+                        variant={
+                          log.action === 'create'
+                            ? 'default'
+                            : log.action === 'delete'
+                              ? 'destructive'
+                              : log.action === 'update'
+                                ? 'secondary'
+                                : 'outline'
+                        }
                         className="text-[10px]"
                       >
                         {actionLabels[log.action]}
@@ -420,32 +456,57 @@ export default function AuditLogsPage() {
                         {categoryLabels[log.category]}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-[10px] max-w-[250px] truncate py-2" title={log.description}>
+                    <TableCell
+                      className="max-w-[250px] truncate py-2 text-[10px]"
+                      title={log.description}
+                    >
                       {log.description}
                     </TableCell>
-                    <TableCell className="text-[10px] font-mono max-w-[130px] truncate py-2" title={log.endpoint}>
+                    <TableCell
+                      className="max-w-[130px] truncate py-2 font-mono text-[10px]"
+                      title={log.endpoint}
+                    >
                       {log.endpoint}
                     </TableCell>
                     <TableCell className="py-2">
                       <Badge
-                        variant={log.method === 'GET' ? 'secondary' : log.method === 'POST' ? 'default' : log.method === 'DELETE' ? 'destructive' : 'outline'}
+                        variant={
+                          log.method === 'GET'
+                            ? 'secondary'
+                            : log.method === 'POST'
+                              ? 'default'
+                              : log.method === 'DELETE'
+                                ? 'destructive'
+                                : 'outline'
+                        }
                         className="text-[10px]"
                       >
                         {log.method}
                       </Badge>
                     </TableCell>
                     <TableCell className="py-2">
-                      <Badge variant={log.success ? 'default' : 'destructive'} className="text-[10px]">
+                      <Badge
+                        variant={log.success ? 'default' : 'destructive'}
+                        className="text-[10px]"
+                      >
                         {log.statusCode}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-[10px] py-2">{log.responseTime}ms</TableCell>
-                    <TableCell className="text-[10px] font-mono max-w-[110px] truncate py-2" title={log.userId || undefined}>
+                    <TableCell className="py-2 text-[10px]">{log.responseTime}ms</TableCell>
+                    <TableCell
+                      className="max-w-[110px] truncate py-2 font-mono text-[10px]"
+                      title={log.userId || undefined}
+                    >
                       {log.userId || '-'}
                     </TableCell>
-                    <TableCell className="text-[10px] font-mono py-2">{log.ipAddress || '-'}</TableCell>
+                    <TableCell className="py-2 font-mono text-[10px]">
+                      {log.ipAddress || '-'}
+                    </TableCell>
                     <TableCell className="py-2">
-                      <Badge variant={log.success ? 'default' : 'destructive'} className="text-[10px]">
+                      <Badge
+                        variant={log.success ? 'default' : 'destructive'}
+                        className="text-[10px]"
+                      >
                         {log.success ? '✓' : '✗'}
                       </Badge>
                     </TableCell>

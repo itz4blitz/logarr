@@ -8,8 +8,32 @@ import * as schema from '../../database/schema';
 export interface CreateAuditLogDto {
   userId?: string;
   sessionId?: string;
-  action: 'create' | 'update' | 'delete' | 'read' | 'login' | 'logout' | 'error' | 'export' | 'import' | 'sync' | 'test' | 'other';
-  category: 'auth' | 'server' | 'log_entry' | 'session' | 'playback' | 'issue' | 'ai_analysis' | 'api_key' | 'settings' | 'retention' | 'proxy' | 'other';
+  action:
+    | 'create'
+    | 'update'
+    | 'delete'
+    | 'read'
+    | 'login'
+    | 'logout'
+    | 'error'
+    | 'export'
+    | 'import'
+    | 'sync'
+    | 'test'
+    | 'other';
+  category:
+    | 'auth'
+    | 'server'
+    | 'log_entry'
+    | 'session'
+    | 'playback'
+    | 'issue'
+    | 'ai_analysis'
+    | 'api_key'
+    | 'settings'
+    | 'retention'
+    | 'proxy'
+    | 'other';
   entityType: string;
   entityId?: string;
   description: string;
@@ -99,7 +123,11 @@ export class AuditService {
       conditions.push(eq(schema.auditLog.category, filters.category as any));
     }
 
-    if (filters.entityType !== undefined && filters.entityType !== null && filters.entityType !== '') {
+    if (
+      filters.entityType !== undefined &&
+      filters.entityType !== null &&
+      filters.entityType !== ''
+    ) {
       conditions.push(eq(schema.auditLog.entityType, filters.entityType));
     }
 
@@ -218,7 +246,10 @@ export class AuditService {
   /**
    * Get recent activity for a specific user
    */
-  async getUserActivity(userId: string, limit: number = 50): Promise<(typeof schema.auditLog.$inferSelect)[]> {
+  async getUserActivity(
+    userId: string,
+    limit: number = 50
+  ): Promise<(typeof schema.auditLog.$inferSelect)[]> {
     return this.getLogs({ userId, limit });
   }
 

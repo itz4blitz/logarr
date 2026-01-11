@@ -93,13 +93,11 @@ describe('ApiKeyGuard', () => {
         apiKey: undefined,
       };
 
-       
       vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue(
         mockRequest.headers['x-api-key'] as string
       );
       vi.mocked(mockApiKeysService.validateApiKey).mockResolvedValue(mockApiKey);
 
-       
       (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
 
       const result = await guard.canActivate(mockContext);
@@ -118,9 +116,8 @@ describe('ApiKeyGuard', () => {
         apiKey: undefined,
       };
 
-       
       vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue(undefined);
-       
+
       (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
 
       await expect(guard.canActivate(mockContext)).rejects.toThrow(UnauthorizedException);
@@ -137,9 +134,8 @@ describe('ApiKeyGuard', () => {
         apiKey: undefined,
       };
 
-       
       vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue('');
-       
+
       (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
 
       await expect(guard.canActivate(mockContext)).rejects.toThrow(UnauthorizedException);
@@ -153,13 +149,11 @@ describe('ApiKeyGuard', () => {
         apiKey: undefined,
       };
 
-       
       vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue(
         mockRequest.headers['x-api-key']
       );
       vi.mocked(mockApiKeysService.validateApiKey).mockResolvedValue(null);
 
-       
       (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
 
       await expect(guard.canActivate(mockContext)).rejects.toThrow(UnauthorizedException);
@@ -175,13 +169,11 @@ describe('ApiKeyGuard', () => {
         apiKey: undefined,
       };
 
-       
       vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue(
         mockRequest.headers['x-api-key']
       );
       vi.mocked(mockApiKeysService.validateApiKey).mockResolvedValue(null);
 
-       
       (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
 
       await expect(guard.canActivate(mockContext)).rejects.toThrow(UnauthorizedException);
@@ -214,13 +206,11 @@ describe('ApiKeyGuard', () => {
         apiKey: undefined,
       };
 
-       
       vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue(
         mockRequest.headers['x-api-key']
       );
       vi.mocked(mockApiKeysService.validateApiKey).mockResolvedValue(mockApiKey);
 
-       
       (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
 
       await guard.canActivate(mockContext);
@@ -261,13 +251,11 @@ describe('ApiKeyGuard', () => {
         apiKey: undefined,
       };
 
-       
       vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue(
         mockRequest.headers['x-api-key']
       );
       vi.mocked(mockApiKeysService.validateApiKey).mockResolvedValue(mockApiKey);
 
-       
       (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
 
       await guard.canActivate(mockContext);
@@ -311,13 +299,11 @@ describe('ApiKeyGuard', () => {
           apiKey: undefined,
         };
 
-         
         vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue(
           mockRequest.headers['x-api-key']
         );
         vi.mocked(mockApiKeysService.validateApiKey).mockResolvedValue(mockApiKey);
 
-         
         (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
 
         const result = await guard.canActivate(mockContext);
@@ -336,7 +322,6 @@ describe('ApiKeyGuard', () => {
         },
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractApiKeyFromHeader(mockRequest);
 
@@ -348,7 +333,6 @@ describe('ApiKeyGuard', () => {
         headers: {},
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractApiKeyFromHeader(mockRequest);
 
@@ -362,7 +346,6 @@ describe('ApiKeyGuard', () => {
         },
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractApiKeyFromHeader(mockRequest);
 
@@ -376,7 +359,6 @@ describe('ApiKeyGuard', () => {
         },
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractApiKeyFromHeader(mockRequest);
 
@@ -390,7 +372,6 @@ describe('ApiKeyGuard', () => {
         },
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractApiKeyFromHeader(mockRequest);
 
@@ -404,7 +385,6 @@ describe('ApiKeyGuard', () => {
         },
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractApiKeyFromHeader(mockRequest);
 
@@ -420,7 +400,6 @@ describe('ApiKeyGuard', () => {
         },
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractApiKeyFromHeader(mockRequest);
 
@@ -437,7 +416,6 @@ describe('ApiKeyGuard', () => {
         ip: '127.0.0.1',
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractIpAddress(mockRequest);
 
@@ -452,7 +430,6 @@ describe('ApiKeyGuard', () => {
         ip: '127.0.0.1',
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractIpAddress(mockRequest);
 
@@ -467,7 +444,6 @@ describe('ApiKeyGuard', () => {
         ip: '127.0.0.1',
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractIpAddress(mockRequest);
 
@@ -480,7 +456,6 @@ describe('ApiKeyGuard', () => {
         ip: '192.168.1.1',
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractIpAddress(mockRequest);
 
@@ -495,7 +470,6 @@ describe('ApiKeyGuard', () => {
         ip: '127.0.0.1',
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractIpAddress(mockRequest);
 
@@ -510,7 +484,6 @@ describe('ApiKeyGuard', () => {
         ip: '127.0.0.1',
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractIpAddress(mockRequest);
 
@@ -525,7 +498,6 @@ describe('ApiKeyGuard', () => {
         ip: '127.0.0.1',
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractIpAddress(mockRequest);
 
@@ -541,7 +513,6 @@ describe('ApiKeyGuard', () => {
         ip: '10.0.0.1',
       };
 
-       
       const guardInstance = guard as any;
       const result = guardInstance.extractIpAddress(mockRequest);
 
@@ -587,15 +558,13 @@ describe('ApiKeyGuard', () => {
         on: onMock,
       };
 
-       
       vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue(
         mockRequest.headers['x-api-key'] as string
       );
       vi.mocked(mockApiKeysService.validateApiKey).mockResolvedValue(mockApiKey);
 
-       
       (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
-       
+
       (mockContext.switchToHttp().getResponse as any).mockReturnValue(mockResponse);
 
       await guard.canActivate(mockContext);
@@ -647,15 +616,13 @@ describe('ApiKeyGuard', () => {
       // Add logUsage mock
       (mockApiKeysService as any).logUsage = vi.fn().mockResolvedValue(undefined);
 
-       
       vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue(
         mockRequest.headers['x-api-key'] as string
       );
       vi.mocked(mockApiKeysService.validateApiKey).mockResolvedValue(mockApiKey);
 
-       
       (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
-       
+
       (mockContext.switchToHttp().getResponse as any).mockReturnValue(mockResponse);
 
       await guard.canActivate(mockContext);
@@ -722,15 +689,13 @@ describe('ApiKeyGuard', () => {
 
       (mockApiKeysService as any).logUsage = vi.fn().mockResolvedValue(undefined);
 
-       
       vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue(
         mockRequest.headers['x-api-key'] as string
       );
       vi.mocked(mockApiKeysService.validateApiKey).mockResolvedValue(mockApiKey);
 
-       
       (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
-       
+
       (mockContext.switchToHttp().getResponse as any).mockReturnValue(mockResponse);
 
       await guard.canActivate(mockContext);
@@ -792,15 +757,13 @@ describe('ApiKeyGuard', () => {
 
       (mockApiKeysService as any).logUsage = vi.fn().mockRejectedValue(new Error('DB error'));
 
-       
       vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue(
         mockRequest.headers['x-api-key'] as string
       );
       vi.mocked(mockApiKeysService.validateApiKey).mockResolvedValue(mockApiKey);
 
-       
       (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
-       
+
       (mockContext.switchToHttp().getResponse as any).mockReturnValue(mockResponse);
 
       await guard.canActivate(mockContext);
@@ -838,13 +801,11 @@ describe('ApiKeyGuard', () => {
         apiKey: undefined,
       };
 
-       
       vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue(
         mockRequest.headers['x-api-key']
       );
       vi.mocked(mockApiKeysService.validateApiKey).mockResolvedValue(mockApiKey);
 
-       
       (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
 
       await guard.canActivate(mockContext);
@@ -884,13 +845,11 @@ describe('ApiKeyGuard', () => {
         existingProperty: 'should-preserve',
       };
 
-       
       vi.spyOn(guard as any, 'extractApiKeyFromHeader').mockReturnValue(
         mockRequest.headers['x-api-key']
       );
       vi.mocked(mockApiKeysService.validateApiKey).mockResolvedValue(mockApiKey);
 
-       
       (mockContext.switchToHttp().getRequest as any).mockReturnValue(mockRequest);
 
       await guard.canActivate(mockContext);

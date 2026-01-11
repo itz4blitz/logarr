@@ -1,4 +1,10 @@
-import { Injectable, ExecutionContext, UnauthorizedException, Logger, CanActivate } from '@nestjs/common';
+import {
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+  Logger,
+  CanActivate,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 import { ApiKeysService } from '../modules/api-keys/api-keys.service';
@@ -63,19 +69,23 @@ export class ApiKeyGuard implements CanActivate {
       const statusCode = response.statusCode;
       const success = statusCode >= 200 && statusCode < 400;
 
-      this.apiKeysService.logUsage(
-        keyRecord.id,
-        (request.url as string) ?? '/',
-        (request.method as string) ?? 'GET',
-        statusCode,
-        responseTime,
-        success,
-        success ? undefined : `HTTP ${statusCode}`,
-        ipAddress,
-        userAgent
-      ).catch((error) => {
-        this.logger.error(`Failed to log API key usage: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      });
+      this.apiKeysService
+        .logUsage(
+          keyRecord.id,
+          (request.url as string) ?? '/',
+          (request.method as string) ?? 'GET',
+          statusCode,
+          responseTime,
+          success,
+          success ? undefined : `HTTP ${statusCode}`,
+          ipAddress,
+          userAgent
+        )
+        .catch((error) => {
+          this.logger.error(
+            `Failed to log API key usage: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
+        });
     });
 
     return true;

@@ -143,6 +143,82 @@ describe('ServersService', () => {
 
       // File ingestion is started asynchronously
     });
+
+    it('should support multiple instances of the same provider type', async () => {
+      // Simulate having one Radarr server already in the database
+      const existingRadarr = {
+        ...mockServer,
+        id: 'existing-radarr-id',
+        name: 'Radarr Movies',
+        providerId: 'radarr',
+        url: 'http://radarr-movies:7878',
+      };
+
+      const newRadarr = {
+        ...mockServer,
+        id: 'new-radarr-id',
+        name: 'Radarr Shorts',
+        providerId: 'radarr',
+        url: 'http://radarr-shorts:7878',
+      };
+
+      configureMockDb(mockDb, { insert: [newRadarr], select: [existingRadarr, newRadarr] });
+
+      const dto = {
+        name: 'Radarr Shorts',
+        providerId: 'radarr',
+        url: 'http://radarr-shorts:7878',
+        apiKey: 'test-api-key',
+      };
+
+      const result = await service.create(dto);
+
+      // Should successfully create the second Radarr instance
+      expect(result).toEqual(newRadarr);
+      expect(mockDb.insert).toHaveBeenCalled();
+    });
+
+    it('should support multiple instances with different log paths', async () => {
+      // First Radarr with primary log path
+      const radarrMovies = {
+        ...mockServer,
+        id: 'radarr-movies-id',
+        name: 'Radarr Movies',
+        providerId: 'radarr',
+        url: 'http://radarr-movies:7878',
+        fileIngestionEnabled: true,
+        logPaths: ['/radarr-logs'],
+      };
+
+      // Second Radarr with numbered log path
+      const radarrShorts = {
+        ...mockServer,
+        id: 'radarr-shorts-id',
+        name: 'Radarr Shorts',
+        providerId: 'radarr',
+        url: 'http://radarr-shorts:7878',
+        fileIngestionEnabled: true,
+        logPaths: ['/radarr-logs-1'],
+      };
+
+      configureMockDb(mockDb, { insert: [radarrShorts], select: [radarrMovies, radarrShorts] });
+
+      const dto = {
+        name: 'Radarr Shorts',
+        providerId: 'radarr',
+        url: 'http://radarr-shorts:7878',
+        apiKey: 'test-api-key',
+        fileIngestionEnabled: true,
+        logPaths: ['/radarr-logs-1'],
+      };
+
+      const result = await service.create(dto);
+
+      // Should successfully create with different log path
+      expect(result?.name).toBe('Radarr Shorts');
+      expect(result?.logPaths).toEqual(['/radarr-logs-1']);
+      expect(mockDb.insert).toHaveBeenCalled();
+    });
   });
 
   describe('update', () => {

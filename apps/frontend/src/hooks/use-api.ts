@@ -722,8 +722,7 @@ export function useUpdateApiKey() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateApiKeyDto }) =>
-      api.updateApiKey(id, data),
+    mutationFn: ({ id, data }: { id: string; data: UpdateApiKeyDto }) => api.updateApiKey(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.apiKeys });
     },
@@ -743,9 +742,8 @@ export function useDeleteApiKey() {
       const previousApiKeys = queryClient.getQueryData(queryKeys.apiKeys);
 
       // Optimistically update to the new value
-      queryClient.setQueryData(
-        queryKeys.apiKeys,
-        (old: ApiKeyInfo[] | undefined) => old?.filter((key) => key.id !== id),
+      queryClient.setQueryData(queryKeys.apiKeys, (old: ApiKeyInfo[] | undefined) =>
+        old?.filter((key) => key.id !== id)
       );
 
       // Return context with previous value

@@ -20,11 +20,7 @@ import {
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 
-import type {
-  ApiKeyInfo,
-  CreateApiKeyDto,
-  UpdateApiKeyDto,
-} from '@/lib/api';
+import type { ApiKeyInfo, CreateApiKeyDto, UpdateApiKeyDto } from '@/lib/api';
 
 import {
   AlertDialog,
@@ -115,13 +111,13 @@ function ApiKeysGrid({
           <Card key={i}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2 min-w-0 flex-1">
+                <div className="flex min-w-0 flex-1 items-center gap-2">
                   <Skeleton className="h-4 w-4 shrink-0" />
                   <Skeleton className="h-4 w-32" />
                 </div>
                 <Skeleton className="h-4 w-14 shrink-0" />
               </div>
-              <Skeleton className="h-3 w-48 mt-1" />
+              <Skeleton className="mt-1 h-3 w-48" />
             </CardHeader>
             <CardContent className="space-y-2 pb-3">
               <div className="grid grid-cols-2 gap-2">
@@ -157,9 +153,9 @@ function ApiKeysGrid({
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <Key className="h-12 w-12 text-muted-foreground/50" />
-          <p className="mt-4 text-muted-foreground">No API keys found</p>
-          <p className="text-sm text-muted-foreground">
+          <Key className="text-muted-foreground/50 h-12 w-12" />
+          <p className="text-muted-foreground mt-4">No API keys found</p>
+          <p className="text-muted-foreground text-sm">
             Add API keys for allowing authenticated remote access
           </p>
         </CardContent>
@@ -175,9 +171,9 @@ function ApiKeysGrid({
           <Card key={apiKey.id}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <CardTitle className="text-base truncate">{apiKey.name}</CardTitle>
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <Icon className="text-muted-foreground h-4 w-4 shrink-0" />
+                  <CardTitle className="truncate text-base">{apiKey.name}</CardTitle>
                 </div>
                 <Badge
                   variant={apiKey.isEnabled ? 'default' : 'secondary'}
@@ -186,10 +182,10 @@ function ApiKeysGrid({
                   {apiKey.isEnabled ? 'Enabled' : 'Disabled'}
                 </Badge>
               </div>
-              <CardDescription className="text-xs mt-1 flex items-center gap-2">
+              <CardDescription className="mt-1 flex items-center gap-2 text-xs">
                 <span>{apiKeyTypeLabels[apiKey.type]}</span>
                 <span>•</span>
-                <span className="text-xs font-mono">{apiKey.id}</span>
+                <span className="font-mono text-xs">{apiKey.id}</span>
                 {apiKey.lastUsedIp && (
                   <>
                     <span>•</span>
@@ -230,20 +226,32 @@ function ApiKeysGrid({
                 )}
               </div>
               {apiKey.notes && (
-                <p className="text-xs text-muted-foreground line-clamp-2 border-t pt-2">{apiKey.notes}</p>
+                <p className="text-muted-foreground line-clamp-2 border-t pt-2 text-xs">
+                  {apiKey.notes}
+                </p>
               )}
             </CardContent>
             <CardFooter className="flex gap-2 pt-0">
-              <Button variant="outline" size="sm" className="flex-1 h-8 text-xs" onClick={() => onEdit(apiKey)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 flex-1 text-xs"
+                onClick={() => onEdit(apiKey)}
+              >
                 Edit
               </Button>
-              <Button variant="outline" size="sm" className="flex-1 h-8 text-xs" onClick={() => onViewAudit(apiKey.id)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 flex-1 text-xs"
+                onClick={() => onViewAudit(apiKey.id)}
+              >
                 Audit Log
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 text-xs"
                 onClick={() => onDelete(apiKey)}
               >
                 <Trash2 className="h-3 w-3" />
@@ -341,7 +349,12 @@ function CreateEditDialog({
             <Label htmlFor="type">Type</Label>
             <Select
               value={formData.type}
-              onValueChange={(value) => setFormData({ ...formData, type: value as 'mobile' | 'web' | 'cli' | 'integration' })}
+              onValueChange={(value) =>
+                setFormData({
+                  ...formData,
+                  type: value as 'mobile' | 'web' | 'cli' | 'integration',
+                })
+              }
               disabled={!!apiKey}
             >
               <SelectTrigger>
@@ -385,9 +398,7 @@ function CreateEditDialog({
                 value={formData.rateLimit}
                 onChange={(e) => setFormData({ ...formData, rateLimit: e.target.value })}
               />
-              <p className="text-xs text-muted-foreground">
-                Max requests per time window
-              </p>
+              <p className="text-muted-foreground text-xs">Max requests per time window</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="rateLimitTtl">Time Window (milliseconds)</Label>
@@ -398,7 +409,7 @@ function CreateEditDialog({
                 value={formData.rateLimitTtl}
                 onChange={(e) => setFormData({ ...formData, rateLimitTtl: e.target.value })}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 {parseInt(formData.rateLimitTtl, 10) / 1000}s window (60000 = 1 minute)
               </p>
             </div>
@@ -494,9 +505,9 @@ function NewKeyDialog({
               </Button>
             </div>
           </div>
-          <div className="rounded-lg bg-muted p-4">
+          <div className="bg-muted rounded-lg p-4">
             <p className="text-sm font-medium">{apiKey.apiKey.name}</p>
-            <p className="text-xs text-muted-foreground">{apiKeyTypeLabels[apiKey.apiKey.type]}</p>
+            <p className="text-muted-foreground text-xs">{apiKeyTypeLabels[apiKey.apiKey.type]}</p>
           </div>
         </div>
         <DialogFooter>
@@ -607,19 +618,15 @@ export default function ApiKeysPage() {
         isSubmitting={createApiKey.isPending || updateApiKey.isPending}
       />
 
-      <NewKeyDialog
-        open={newKeyDialogOpen}
-        onOpenChange={setNewKeyDialogOpen}
-        apiKey={newKey}
-      />
+      <NewKeyDialog open={newKeyDialogOpen} onOpenChange={setNewKeyDialogOpen} apiKey={newKey} />
 
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete API Key</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{selectedApiKey?.name}&quot;? This action cannot be
-              undone. Any applications using this key will no longer be able to access the API.
+              Are you sure you want to delete &quot;{selectedApiKey?.name}&quot;? This action cannot
+              be undone. Any applications using this key will no longer be able to access the API.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -702,7 +709,17 @@ function AuditLogDialog({
   const exportToCSV = () => {
     if (!filteredLogs || filteredLogs.length === 0) return;
 
-    const headers = ['Timestamp', 'Endpoint', 'Method', 'Status Code', 'Success', 'Response Time (ms)', 'IP Address', 'User Agent', 'Error Message'];
+    const headers = [
+      'Timestamp',
+      'Endpoint',
+      'Method',
+      'Status Code',
+      'Success',
+      'Response Time (ms)',
+      'IP Address',
+      'User Agent',
+      'Error Message',
+    ];
     const csvRows = [
       headers.join(','),
       ...filteredLogs.map((log) =>
@@ -738,9 +755,9 @@ function AuditLogDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-none w-[95vw] h-[90vh] overflow-hidden flex flex-col p-0 gap-0 max-w-[95vw]">
+      <DialogContent className="flex h-[90vh] w-[95vw] !max-w-none max-w-[95vw] flex-col gap-0 overflow-hidden p-0">
         {/* Header */}
-        <div className="border-b px-6 py-4 pr-16 space-y-4">
+        <div className="space-y-4 border-b px-6 py-4 pr-16">
           <div className="flex items-center justify-between gap-4">
             <DialogTitle className="text-lg font-semibold">Audit Log</DialogTitle>
             <div className="flex items-center gap-2">
@@ -755,7 +772,7 @@ function AuditLogDialog({
                   }}
                   className="h-8 text-xs"
                 >
-                  <X className="h-3 w-3 mr-1" />
+                  <X className="mr-1 h-3 w-3" />
                   Clear Filters
                 </Button>
               )}
@@ -766,7 +783,7 @@ function AuditLogDialog({
                 disabled={!filteredLogs || filteredLogs.length === 0}
                 className="h-8"
               >
-                <Download className="h-3 w-3 mr-2" />
+                <Download className="mr-2 h-3 w-3" />
                 Export CSV
               </Button>
             </div>
@@ -775,14 +792,14 @@ function AuditLogDialog({
           {/* Filters */}
           <div className="flex items-center gap-3">
             {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="relative max-w-md flex-1">
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search by endpoint or IP address..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-9 pl-9 pr-3 rounded-md border border-input bg-background text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring h-9 w-full rounded-md border pr-3 pl-9 text-sm focus-visible:ring-2 focus-visible:outline-none"
               />
             </div>
 
@@ -790,7 +807,7 @@ function AuditLogDialog({
             <select
               value={methodFilter}
               onChange={(e) => setMethodFilter(e.target.value)}
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="border-input bg-background ring-offset-background focus-visible:ring-ring h-9 rounded-md border px-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
             >
               <option value="all">All Methods</option>
               {uniqueMethods.map((method) => (
@@ -804,7 +821,7 @@ function AuditLogDialog({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="border-input bg-background ring-offset-background focus-visible:ring-ring h-9 rounded-md border px-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
             >
               <option value="all">All Statuses</option>
               <option value="success">Success Only</option>
@@ -814,7 +831,7 @@ function AuditLogDialog({
 
           {/* Results count */}
           {hasActiveFilters && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Showing {filteredCount} of {totalCount} logs
             </p>
           )}
@@ -823,24 +840,25 @@ function AuditLogDialog({
         {/* Table */}
         <div className="flex-1 overflow-auto">
           {!keyId ? (
-            <div className="flex items-center justify-center h-full">
-              <p className="text-sm text-muted-foreground">No API key selected</p>
+            <div className="flex h-full items-center justify-center">
+              <p className="text-muted-foreground text-sm">No API key selected</p>
             </div>
           ) : isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <div className="flex h-full items-center justify-center">
+              <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
             </div>
           ) : !auditLogs || auditLogs.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex h-full items-center justify-center">
               <Alert className="max-w-md">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  No audit logs found for this API key. Logs will appear here once the key is used to make API requests.
+                  No audit logs found for this API key. Logs will appear here once the key is used
+                  to make API requests.
                 </AlertDescription>
               </Alert>
             </div>
           ) : filteredLogs.length === 0 ? (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex h-full items-center justify-center">
               <Alert className="max-w-md">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
@@ -850,7 +868,7 @@ function AuditLogDialog({
             </div>
           ) : (
             <Table>
-              <TableHeader className="sticky top-0 bg-background z-10">
+              <TableHeader className="bg-background sticky top-0 z-10">
                 <TableRow>
                   <TableHead className="w-[180px]">Timestamp</TableHead>
                   <TableHead>Endpoint</TableHead>
@@ -864,22 +882,20 @@ function AuditLogDialog({
               <TableBody>
                 {filteredLogs.map((log) => (
                   <TableRow key={log.id}>
-                    <TableCell className="text-xs font-mono">
+                    <TableCell className="font-mono text-xs">
                       {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
                     </TableCell>
-                    <TableCell className="text-xs font-mono">
-                      {log.endpoint}
-                    </TableCell>
+                    <TableCell className="font-mono text-xs">{log.endpoint}</TableCell>
                     <TableCell>
                       <Badge
                         variant={
                           log.method === 'GET'
                             ? 'secondary'
                             : log.method === 'POST'
-                            ? 'default'
-                            : log.method === 'DELETE'
-                            ? 'destructive'
-                            : 'outline'
+                              ? 'default'
+                              : log.method === 'DELETE'
+                                ? 'destructive'
+                                : 'outline'
                         }
                         className="text-xs"
                       >
@@ -887,19 +903,12 @@ function AuditLogDialog({
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge
-                        variant={log.success ? 'default' : 'destructive'}
-                        className="text-xs"
-                      >
+                      <Badge variant={log.success ? 'default' : 'destructive'} className="text-xs">
                         {log.statusCode}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-xs">
-                      {log.responseTime}ms
-                    </TableCell>
-                    <TableCell className="text-xs font-mono">
-                      {log.ipAddress || '-'}
-                    </TableCell>
+                    <TableCell className="text-xs">{log.responseTime}ms</TableCell>
+                    <TableCell className="font-mono text-xs">{log.ipAddress || '-'}</TableCell>
                     <TableCell>
                       <Badge variant={log.success ? 'default' : 'destructive'} className="text-xs">
                         {log.success ? '✓' : '✗'}
@@ -913,8 +922,8 @@ function AuditLogDialog({
         </div>
 
         {/* Footer */}
-        <div className="border-t px-6 py-4 flex items-center justify-between bg-background">
-          <p className="text-xs text-muted-foreground">
+        <div className="bg-background flex items-center justify-between border-t px-6 py-4">
+          <p className="text-muted-foreground text-xs">
             {auditLogs?.length || 0} total logs
             {hasActiveFilters && ` (${filteredCount} shown)`}
           </p>
